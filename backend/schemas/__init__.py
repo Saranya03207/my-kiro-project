@@ -10,6 +10,10 @@ from backend.schemas.order import (
     OrderResponse,
     OrderItemResponse
 )
+from backend.schemas.auth import (
+    LoginRequest,
+    SessionResponse
+)
 
 __all__ = [
     "MenuItemCreate",
@@ -18,5 +22,7 @@ __all__ = [
     "OrderCreate",
     "OrderItemCreate",
     "OrderResponse",
-    "OrderItemResponse"
+    "OrderItemResponse",
+    "LoginRequest",
+    "SessionResponse"
 ]

@@ -48,7 +48,7 @@ This implementation plan breaks down the Smart Canteen Manager into discrete, ac
     - Define `OrderResponse`, `OrderItemResponse` schemas
     - _Requirements: 4.1, 4.3, 17.6_
 
-  - [~] 3.3 Create authentication schemas
+  - [x] 3.3 Create authentication schemas
     - Define `LoginRequest` schema with role validation
     - Define `SessionResponse` schema
     - _Requirements: 15.1, 15.2_
