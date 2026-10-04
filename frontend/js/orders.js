@@ -1,14 +1,23 @@
 /**
  * Student Order Management & Status Tracking
+ * Enhanced with visual order timeline and item resolution
  */
 
 import apiClient from './api.js';
-import { formatPrice, formatDateTime, getStatusBadge, escapeHtml, showToast } from './utils.js';
+import { 
+  formatPrice, 
+  formatDateTime, 
+  getStatusBadge, 
+  getOrderTimelineHtml, 
+  escapeHtml, 
+  getFoodImage, 
+  showToast 
+} from './utils.js';
 
 export class OrderManager {
   constructor() {
     this.orders = [];
-    this.menuMap = {}; // menu_item_id -> { name, price }
+    this.menuMap = {}; // menu_item_id -> { name, price, category }
     this.pollTimer = null;
     this.currentFilter = 'all';
   }
@@ -18,7 +27,7 @@ export class OrderManager {
       const items = await apiClient.getMenuItems();
       if (Array.isArray(items)) {
         items.forEach(item => {
-          this.menuMap[item.id] = { name: item.name, price: item.price };
+          this.menuMap[item.id] = { name: item.name, price: item.price, category: item.category };
         });
       }
     } catch (err) {
@@ -44,7 +53,7 @@ export class OrderManager {
       this.renderOrders();
 
       // Check if auto-refresh is needed for active orders
-      const hasActive = this.orders.some(o => ['pending', 'preparing', 'ready'].includes(o.status.toLowerCase()));
+      const hasActive = this.orders.some(o => ['pending', 'preparing', 'ready'].includes((o.status || '').toLowerCase()));
       if (hasActive) {
         this.startPolling();
       } else {
@@ -63,7 +72,7 @@ export class OrderManager {
     if (this.pollTimer) return;
     this.pollTimer = setInterval(() => {
       this.silentRefresh();
-    }, 8000);
+    }, 6000);
   }
 
   stopPolling() {
@@ -78,7 +87,7 @@ export class OrderManager {
       const orders = await apiClient.getOrderHistory();
       this.orders = orders || [];
       this.renderOrders();
-      const hasActive = this.orders.some(o => ['pending', 'preparing', 'ready'].includes(o.status.toLowerCase()));
+      const hasActive = this.orders.some(o => ['pending', 'preparing', 'ready'].includes((o.status || '').toLowerCase()));
       if (!hasActive) {
         this.stopPolling();
       }
@@ -99,11 +108,11 @@ export class OrderManager {
 
     let filtered = this.orders;
     if (this.currentFilter === 'active') {
-      filtered = this.orders.filter(o => ['pending', 'preparing', 'ready'].includes(o.status.toLowerCase()));
+      filtered = this.orders.filter(o => ['pending', 'preparing', 'ready'].includes((o.status || '').toLowerCase()));
     } else if (this.currentFilter === 'completed') {
-      filtered = this.orders.filter(o => o.status.toLowerCase() === 'completed');
+      filtered = this.orders.filter(o => (o.status || '').toLowerCase() === 'completed');
     } else if (this.currentFilter === 'cancelled') {
-      filtered = this.orders.filter(o => o.status.toLowerCase() === 'cancelled');
+      filtered = this.orders.filter(o => (o.status || '').toLowerCase() === 'cancelled');
     }
 
     if (filtered.length === 0) {
@@ -115,15 +124,22 @@ export class OrderManager {
     if (emptyEl) emptyEl.classList.add('hidden');
 
     listEl.innerHTML = filtered.map(order => {
+      const timelineHtml = getOrderTimelineHtml(order.status);
+
       const itemsHtml = (order.items || []).map(item => {
-        const itemInfo = this.menuMap[item.menu_item_id];
-        const name = itemInfo ? itemInfo.name : `Food Item #${item.menu_item_id}`;
+        const itemInfo = this.menuMap[item.menu_item_id] || { name: `Food Item #${item.menu_item_id}` };
         const unitPrice = parseFloat(item.price_at_order_time || 0);
         const subtotal = unitPrice * item.quantity;
+        const imgSrc = getFoodImage(itemInfo);
 
         return `
           <tr>
-            <td><strong>${escapeHtml(name)}</strong></td>
+            <td style="display: flex; align-items: center; gap: 10px;">
+              <img src="${imgSrc}" alt="${escapeHtml(itemInfo.name)}" style="width: 38px; height: 38px; border-radius: var(--radius-xs); object-fit: cover;" onerror="this.src='assets/food/default-food.jpg'">
+              <div>
+                <strong>${escapeHtml(itemInfo.name)}</strong>
+              </div>
+            </td>
             <td>× ${item.quantity}</td>
             <td class="numeric">${formatPrice(unitPrice)}</td>
             <td class="numeric"><strong>${formatPrice(subtotal)}</strong></td>
@@ -144,6 +160,10 @@ export class OrderManager {
           </div>
 
           <div class="order-body">
+            <!-- Visual Order Timeline -->
+            ${timelineHtml}
+
+            <!-- Items Table -->
             <table class="order-items-table">
               <thead>
                 <tr>
@@ -160,7 +180,7 @@ export class OrderManager {
           </div>
 
           <div class="order-footer">
-            <span class="text-muted">Total Amount</span>
+            <span class="text-muted" style="font-size: var(--font-size-sm)">Total Amount Paid / Booked</span>
             <span class="order-total-amount">${formatPrice(order.total_price)}</span>
           </div>
         </div>

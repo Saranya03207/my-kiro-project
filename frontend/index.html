@@ -7,153 +7,89 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/responsive.css">
-  <style>
-    .login-wrapper {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: var(--spacing-lg);
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    }
-
-    .login-card {
-      width: 100%;
-      max-width: 440px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-lg);
-      overflow: hidden;
-    }
-
-    .login-card-header {
-      padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
-      text-align: center;
-      background: linear-gradient(180deg, var(--primary-light) 0%, var(--surface) 100%);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .login-logo {
-      width: 56px;
-      height: 56px;
-      background: linear-gradient(135deg, var(--primary), #3b82f6);
-      color: white;
-      border-radius: var(--radius-md);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
-      margin-bottom: var(--spacing-sm);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .login-card-header h1 {
-      font-size: var(--font-size-xl);
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-
-    .login-card-header p {
-      font-size: var(--font-size-sm);
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .login-card-body {
-      padding: var(--spacing-xl);
-    }
-
-    .role-selector {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--spacing-sm);
-      margin-bottom: var(--spacing-lg);
-    }
-
-    .role-btn {
-      padding: 12px;
-      border: 2px solid var(--border);
-      background: var(--surface);
-      border-radius: var(--radius-md);
-      font-weight: 600;
-      font-size: var(--font-size-sm);
-      color: var(--text-secondary);
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      transition: var(--transition);
-    }
-
-    .role-btn span.role-icon {
-      font-size: 1.5rem;
-    }
-
-    .role-btn.active {
-      border-color: var(--primary);
-      background: var(--primary-light);
-      color: var(--primary);
-    }
-
-    .demo-hint {
-      margin-top: var(--spacing-md);
-      padding: var(--spacing-sm);
-      background: var(--gray-50);
-      border: 1px dashed var(--gray-300);
-      border-radius: var(--radius-sm);
-      font-size: var(--font-size-xs);
-      color: var(--text-muted);
-      text-align: center;
-    }
-  </style>
 </head>
 <body>
-  <div class="login-wrapper">
-    <div class="login-card">
-      <div class="login-card-header">
-        <div class="login-logo">🍲</div>
-        <h1>Smart Canteen Manager</h1>
-        <p>Kiro University Food Booking System</p>
+  <div class="login-split-container">
+    <!-- Left Hero Panel (Visual & Brand) -->
+    <div class="login-hero-panel">
+      <img src="assets/food/login-hero.jpg" alt="Campus Canteen Food Spread" class="login-hero-bg">
+      <div class="login-hero-overlay"></div>
+
+      <div style="position: relative; z-index: 2;">
+        <span class="login-hero-badge">Campus Canteen • Fast • Simple • Fresh</span>
       </div>
 
-      <div class="login-card-body">
+      <div class="login-hero-content">
+        <h1 class="login-hero-title">Skip the queue.<br><span>Enjoy your meal.</span></h1>
+        <p class="login-hero-desc">
+          Pre-book your favourite campus meals, track your kitchen preparation in real-time, and pick up hot food without waiting.
+        </p>
+
+        <div class="floating-badges">
+          <div class="floating-pill">
+            <span>🍔</span> <span>Fresh Daily Meals</span>
+          </div>
+          <div class="floating-pill">
+            <span>⚡</span> <span>Fast Counter Pickup</span>
+          </div>
+          <div class="floating-pill">
+            <span>🥤</span> <span>Chilled Refreshments</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="position: relative; z-index: 2; font-size: var(--font-size-xs); color: rgba(255, 255, 255, 0.65);">
+        &copy; 2026 Kiro University • Smart Food Services
+      </div>
+    </div>
+
+    <!-- Right Form Panel (Interactive Login) -->
+    <div class="login-form-panel">
+      <div class="login-card">
+        <div class="login-brand-header">
+          <div class="login-brand-logo">🍲</div>
+          <h2>Smart Canteen Manager</h2>
+          <p>Welcome back! Select your role to sign in.</p>
+        </div>
+
         <form id="loginForm" autocomplete="off">
+          <!-- Role Selector -->
           <div class="form-group">
-            <label class="form-label">Select Role</label>
-            <div class="role-selector" id="roleSelector">
-              <button type="button" class="role-btn active" data-role="student">
-                <span class="role-icon">🎓</span>
+            <label class="form-label">Sign in as</label>
+            <div class="role-tabs" id="roleSelector">
+              <button type="button" class="role-tab-btn active" data-role="student">
+                <span>🎓</span>
                 <span>Student</span>
               </button>
-              <button type="button" class="role-btn" data-role="admin">
-                <span class="role-icon">🛠️</span>
+              <button type="button" class="role-tab-btn" data-role="admin">
+                <span>🛠️</span>
                 <span>Administrator</span>
               </button>
             </div>
             <input type="hidden" id="roleInput" value="student">
           </div>
 
+          <!-- User ID Input -->
           <div class="form-group">
             <label for="userIdInput" class="form-label">User ID <span class="required">*</span></label>
             <input 
               type="text" 
               id="userIdInput" 
               class="form-input" 
-              placeholder="e.g. S001 (Student) or admin001" 
+              placeholder="e.g. S001" 
               required 
               autofocus
             >
             <div class="form-error" id="userIdError"></div>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnLogin">
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-accent btn-block btn-lg" id="btnLogin">
             <span>Sign In to Canteen</span>
           </button>
 
-          <div class="demo-hint" id="demoHint">
+          <!-- Quick Tip -->
+          <div style="margin-top: var(--spacing-md); padding: 10px; background: var(--surface-alt); border-radius: var(--radius-sm); border: 1px dashed var(--border); font-size: var(--font-size-xs); text-align: center; color: var(--text-muted);" id="demoHint">
             💡 <strong>Quick Login Tip:</strong> For Student use ID <code>S001</code>. For Admin use ID <code>admin001</code>.
           </div>
         </form>
@@ -171,7 +107,7 @@
       // Check if already authenticated
       AuthService.checkGuest();
 
-      const roleButtons = document.querySelectorAll('.role-btn');
+      const roleButtons = document.querySelectorAll('.role-tab-btn');
       const roleInput = document.getElementById('roleInput');
       const userIdInput = document.getElementById('userIdInput');
       const demoHint = document.getElementById('demoHint');
@@ -221,7 +157,7 @@
               } else {
                 window.location.href = 'student.html';
               }
-            }, 600);
+            }, 500);
           } else {
             btnLogin.disabled = false;
             btnLogin.innerHTML = 'Sign In to Canteen';

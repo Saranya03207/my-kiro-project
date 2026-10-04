@@ -1,10 +1,11 @@
 /**
  * Cart Manager for Student Interface
+ * Enhanced with food thumbnails and reassuring checkout UI
  */
 
 import apiClient from './api.js';
 import AuthService from './auth.js';
-import { formatPrice, showToast, escapeHtml } from './utils.js';
+import { formatPrice, showToast, escapeHtml, getFoodImage } from './utils.js';
 
 export class CartManager {
   constructor() {
@@ -108,12 +109,12 @@ export class CartManager {
   }
 
   updateCartBadge() {
-    const badge = document.getElementById('cartBadgeCount');
-    if (badge) {
-      const count = this.getItemCount();
-      badge.textContent = count;
-      badge.classList.toggle('hidden', count === 0);
-    }
+    const badges = document.querySelectorAll('.cart-badge-count');
+    const count = this.getItemCount();
+    badges.forEach(b => {
+      b.textContent = count;
+      b.classList.toggle('hidden', count === 0);
+    });
   }
 
   renderCartUI() {
@@ -124,6 +125,7 @@ export class CartManager {
     const summaryCard = document.getElementById('cartSummaryCard');
     const subtotalEl = document.getElementById('cartSubtotal');
     const totalEl = document.getElementById('cartTotal');
+    const countEl = document.getElementById('cartItemCount');
     const placeBtn = document.getElementById('btnPlaceOrder');
 
     if (!container) return;
@@ -140,32 +142,46 @@ export class CartManager {
     if (summaryCard) summaryCard.classList.remove('hidden');
     if (placeBtn) placeBtn.disabled = false;
 
-    container.innerHTML = this.items.map(item => `
-      <div class="cart-item" data-id="${item.id}">
-        <div class="cart-item-info">
-          <div class="cart-item-name">${escapeHtml(item.name)}</div>
-          <div class="cart-item-unit-price">${formatPrice(item.price)} each • Max ${item.stock_quantity}</div>
-        </div>
+    container.innerHTML = this.items.map(item => {
+      const imgSrc = getFoodImage(item);
+      return `
+        <div class="cart-item" data-id="${item.id}">
+          <div class="cart-item-media">
+            <img 
+              src="${imgSrc}" 
+              alt="${escapeHtml(item.name)}" 
+              class="cart-item-img"
+              onerror="this.onerror=null; this.src='assets/food/default-food.jpg';"
+            >
+          </div>
 
-        <div class="qty-selector">
-          <button class="qty-btn btn-decrease" aria-label="Decrease quantity" data-id="${item.id}">-</button>
-          <input type="number" class="qty-input" value="${item.quantity}" min="1" max="${item.stock_quantity}" data-id="${item.id}" readonly>
-          <button class="qty-btn btn-increase" aria-label="Increase quantity" data-id="${item.id}" ${item.quantity >= item.stock_quantity ? 'disabled' : ''}>+</button>
-        </div>
+          <div class="cart-item-info">
+            <div class="cart-item-name">${escapeHtml(item.name)}</div>
+            <div class="cart-item-unit-price">${formatPrice(item.price)} each • Max ${item.stock_quantity}</div>
+          </div>
 
-        <div class="cart-item-total">
-          ${formatPrice(item.price * item.quantity)}
-        </div>
+          <div class="qty-selector">
+            <button class="qty-btn btn-decrease" aria-label="Decrease quantity" data-id="${item.id}">-</button>
+            <input type="number" class="qty-input" value="${item.quantity}" min="1" max="${item.stock_quantity}" data-id="${item.id}" readonly>
+            <button class="qty-btn btn-increase" aria-label="Increase quantity" data-id="${item.id}" ${item.quantity >= item.stock_quantity ? 'disabled' : ''}>+</button>
+          </div>
 
-        <button class="btn btn-sm btn-outline-danger btn-remove" data-id="${item.id}" title="Remove item">
-          ✕
-        </button>
-      </div>
-    `).join('');
+          <div class="cart-item-total">
+            ${formatPrice(item.price * item.quantity)}
+          </div>
+
+          <button class="btn btn-sm btn-outline-danger btn-remove" data-id="${item.id}" title="Remove item">
+            ✕
+          </button>
+        </div>
+      `;
+    }).join('');
 
     const total = this.getTotal();
+    const itemCount = this.getItemCount();
     if (subtotalEl) subtotalEl.textContent = formatPrice(total);
     if (totalEl) totalEl.textContent = formatPrice(total);
+    if (countEl) countEl.textContent = `${itemCount} item${itemCount !== 1 ? 's' : ''}`;
 
     // Attach listeners
     container.querySelectorAll('.btn-decrease').forEach(btn => {
@@ -208,7 +224,7 @@ export class CartManager {
     const placeBtn = document.getElementById('btnPlaceOrder');
     if (placeBtn) {
       placeBtn.disabled = true;
-      placeBtn.innerHTML = '<span class="spinner"></span> Placing Order...';
+      placeBtn.innerHTML = '<span class="spinner"></span> Confirming Booking...';
     }
 
     try {
@@ -216,8 +232,6 @@ export class CartManager {
       
       this.clear();
       showToast(`Order #${createdOrder.id} placed successfully!`, 'success');
-
-      // Set latest order id for orders tab tracking
       sessionStorage.setItem('canteen_latest_order_id', createdOrder.id);
 
       return createdOrder;

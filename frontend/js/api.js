@@ -75,6 +75,14 @@ class ApiClient {
       }
 
       if (!response.ok) {
+        if (response.status === 401 && !endpoint.includes('/auth/login')) {
+          sessionStorage.removeItem('canteen_session_token');
+          sessionStorage.removeItem('canteen_user_id');
+          sessionStorage.removeItem('canteen_user_role');
+          window.location.href = 'index.html';
+          return null;
+        }
+
         let errorMsg = 'Request failed';
         let errorCode = 'REQUEST_FAILED';
         let errorDetails = null;

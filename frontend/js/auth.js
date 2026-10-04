@@ -17,9 +17,12 @@ export class AuthService {
   }
 
   static getUser() {
+    const id = sessionStorage.getItem(STORAGE_KEYS.USER_ID) || '';
+    const role = sessionStorage.getItem(STORAGE_KEYS.ROLE) || '';
     return {
-      userId: sessionStorage.getItem(STORAGE_KEYS.USER_ID),
-      role: sessionStorage.getItem(STORAGE_KEYS.ROLE)
+      userId: id,
+      user_id: id,
+      role: role
     };
   }
 

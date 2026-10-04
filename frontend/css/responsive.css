@@ -2,8 +2,32 @@
    Smart Canteen Manager - Responsive Styles
    ========================================================================== */
 
+/* Large Desktop (>= 1280px) */
+@media (min-width: 1280px) {
+  .food-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 /* Tablet & Smaller (<= 1024px) */
 @media (max-width: 1024px) {
+  .login-split-container {
+    grid-template-columns: 1fr;
+  }
+
+  .login-hero-panel {
+    padding: var(--spacing-xl);
+    min-height: 280px;
+  }
+
+  .login-hero-title {
+    font-size: 2rem;
+  }
+
+  .login-hero-desc {
+    display: none;
+  }
+
   .cart-layout {
     grid-template-columns: 1fr;
     gap: var(--spacing-lg);
@@ -16,15 +40,19 @@
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .food-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* Mobile & Small Tablets (<= 768px) */
 @media (max-width: 768px) {
   .header-content {
-    height: 60px;
+    height: 64px;
   }
 
-  .brand-info span {
+  .brand-info .campus-tag {
     display: none;
   }
 
@@ -36,24 +64,21 @@
     grid-template-columns: 1fr;
   }
 
+  .student-greeting-title {
+    font-size: 1.5rem;
+  }
+
   .section-header {
     flex-direction: column;
     align-items: flex-start;
   }
 
   .filter-bar {
-    flex-direction: column;
-    align-items: stretch;
+    margin-bottom: var(--spacing-md);
   }
 
   .search-box {
     max-width: 100%;
-  }
-
-  .filter-chips {
-    overflow-x: auto;
-    white-space: nowrap;
-    padding-bottom: var(--spacing-xs);
   }
 
   .stats-grid {
@@ -63,6 +88,20 @@
   .order-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .order-timeline {
+    padding: var(--spacing-md) var(--spacing-xs);
+  }
+
+  .timeline-label {
+    font-size: 0.7rem;
+  }
+
+  .timeline-marker {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
   }
 
   .order-footer {
@@ -88,17 +127,21 @@
   }
 
   .brand-info h1 {
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
 
   .brand-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 1rem;
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
   }
 
   .btn {
-    min-height: 44px; /* Ensure 44px touch target on mobile */
+    min-height: 44px; /* Accessible 44px touch target */
+  }
+
+  .login-card {
+    padding: var(--spacing-lg);
   }
 
   .cart-item {

@@ -1,5 +1,6 @@
 /**
  * Admin Dashboard, Menu, Inventory, and Orders Management
+ * Enhanced with food thumbnails, stock capacity progress bars, and kitchen order workflows
  */
 
 import apiClient from './api.js';
@@ -8,6 +9,7 @@ import {
   formatDateTime, 
   getStatusBadge, 
   escapeHtml, 
+  getFoodImage, 
   showToast, 
   showModal, 
   hideModal 
@@ -74,18 +76,24 @@ export class AdminManager {
     if (!tbody) return;
 
     if (items.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No sales data recorded yet.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted" style="padding: 24px;">No sales data recorded yet.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = items.map(item => `
-      <tr>
-        <td><strong>${escapeHtml(item.item_name || `Item #${item.menu_item_id}`)}</strong></td>
-        <td><span class="badge badge-neutral">${escapeHtml(item.category || 'General')}</span></td>
-        <td>${item.total_quantity_sold || 0} sold</td>
-        <td><strong>${formatPrice(item.total_revenue || 0)}</strong></td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = items.map(item => {
+      const imgSrc = getFoodImage(item);
+      return `
+        <tr>
+          <td style="display: flex; align-items: center; gap: 10px;">
+            <img src="${imgSrc}" alt="${escapeHtml(item.item_name)}" class="table-thumb" onerror="this.src='assets/food/default-food.jpg'">
+            <strong>${escapeHtml(item.item_name || `Item #${item.menu_item_id}`)}</strong>
+          </td>
+          <td><span class="badge badge-neutral">${escapeHtml(item.category || 'General')}</span></td>
+          <td><strong>${item.total_quantity_sold || 0}</strong> orders</td>
+          <td><strong style="color: var(--accent);">${formatPrice(item.total_revenue || 0)}</strong></td>
+        </tr>
+      `;
+    }).join('');
   }
 
   renderRecentOrders(orders) {
@@ -93,7 +101,7 @@ export class AdminManager {
     if (!listEl) return;
 
     if (orders.length === 0) {
-      listEl.innerHTML = `<div class="empty-state"><span class="empty-state-desc">No orders placed today yet.</span></div>`;
+      listEl.innerHTML = `<div class="empty-state" style="padding: 24px;"><span class="empty-state-desc">No orders placed today yet.</span></div>`;
       return;
     }
 
@@ -128,17 +136,17 @@ export class AdminManager {
     if (!container) return;
 
     if (items.length === 0) {
-      container.innerHTML = `<div class="alert alert-success">✓ All inventory items are adequately stocked above threshold.</div>`;
+      container.innerHTML = `<div class="alert alert-success"><span>✓</span> <div><strong>All Stocks Healthy:</strong> All canteen inventory items are stocked above their shortage threshold.</div></div>`;
       return;
     }
 
     container.innerHTML = `
       <div class="alert alert-warning">
-        <span>⚠</span>
+        <span style="font-size: 1.3rem;">⚠</span>
         <div>
-          <strong>${items.length} item(s) running low on stock:</strong>
+          <strong>${items.length} item(s) running low on inventory stock:</strong>
           <ul style="margin-top: 4px; padding-left: 20px;">
-            ${items.map(i => `<li>${escapeHtml(i.name)}: <strong>${i.stock_quantity} remaining</strong> (threshold: ${i.stock_threshold})</li>`).join('')}
+            ${items.map(i => `<li>${escapeHtml(i.name)}: <strong>${i.stock_quantity} left</strong> (alert threshold: ${i.stock_threshold})</li>`).join('')}
           </ul>
         </div>
       </div>
@@ -165,31 +173,38 @@ export class AdminManager {
     if (!tbody) return;
 
     if (this.menuItems.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No menu items found. Click "Add Food Item" to create one.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted" style="padding: 32px;">No menu items found. Click "+ Add Food Item" to create one.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = this.menuItems.map(item => `
-      <tr data-item-id="${item.id}">
-        <td><strong>#${item.id}</strong></td>
-        <td><strong>${escapeHtml(item.name)}</strong></td>
-        <td><span class="badge badge-neutral">${escapeHtml(item.category)}</span></td>
-        <td>${item.stock_quantity}</td>
-        <td>
-          <button class="btn btn-sm ${item.is_available ? 'btn-success' : 'btn-secondary'} btn-toggle-avail" data-id="${item.id}">
-            ${item.is_available ? '✓ Available' : '✕ Disabled'}
-          </button>
-        </td>
-        <td class="actions">
-          <div class="table-actions-group">
-            <button class="btn btn-sm btn-secondary btn-edit-item" data-id="${item.id}">Edit</button>
-            <button class="btn btn-sm btn-outline-danger btn-delete-item" data-id="${item.id}">Delete</button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = this.menuItems.map(item => {
+      const imgSrc = getFoodImage(item);
+      return `
+        <tr data-item-id="${item.id}">
+          <td><strong>#${item.id}</strong></td>
+          <td style="display: flex; align-items: center; gap: 12px;">
+            <img src="${imgSrc}" alt="${escapeHtml(item.name)}" class="table-thumb" onerror="this.src='assets/food/default-food.jpg'">
+            <div>
+              <div style="font-weight: 700; color: var(--text-primary);">${escapeHtml(item.name)}</div>
+            </div>
+          </td>
+          <td><span class="badge badge-neutral">${escapeHtml(item.category)}</span></td>
+          <td><strong>${item.stock_quantity}</strong></td>
+          <td>
+            <button class="btn btn-sm ${item.is_available ? 'btn-success' : 'btn-secondary'} btn-toggle-avail" data-id="${item.id}">
+              ${item.is_available ? '✓ Available' : '✕ Disabled'}
+            </button>
+          </td>
+          <td class="actions">
+            <div style="display: inline-flex; gap: 6px;">
+              <button class="btn btn-sm btn-secondary btn-edit-item" data-id="${item.id}">Edit</button>
+              <button class="btn btn-sm btn-outline-danger btn-delete-item" data-id="${item.id}">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
 
-    // Attach row events
     tbody.querySelectorAll('.btn-toggle-avail').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const id = parseInt(e.currentTarget.dataset.id, 10);
@@ -241,7 +256,6 @@ export class AdminManager {
     if (title) title.textContent = `Edit Food Item: ${item.name}`;
 
     try {
-      // Fetch full details
       const fullItem = await apiClient.getMenuItem(id).catch(() => item);
       document.getElementById('menuItemId').value = fullItem.id;
       document.getElementById('menuItemName').value = fullItem.name;
@@ -335,30 +349,52 @@ export class AdminManager {
     }
 
     if (items.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No inventory records found.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted" style="padding: 32px;">No inventory records found.</td></tr>`;
       return;
     }
 
     tbody.innerHTML = items.map(item => {
       const isLow = item.stock_quantity <= item.stock_threshold;
       const isOut = item.stock_quantity <= 0;
-      let statusTag = '<span class="badge badge-success">Sufficient</span>';
+      let statusTag = '<span class="badge badge-success">Healthy</span>';
+      let fillClass = 'healthy';
       if (isOut) {
         statusTag = '<span class="badge badge-error">Out of Stock</span>';
+        fillClass = 'out';
       } else if (isLow) {
         statusTag = `<span class="badge badge-warning">Low Stock</span>`;
+        fillClass = 'low';
       }
+
+      // Calculate bar percentage (capped at 100%)
+      const maxVisual = Math.max(item.stock_threshold * 3, 30);
+      const percent = Math.min(Math.round((item.stock_quantity / maxVisual) * 100), 100);
+      const imgSrc = getFoodImage(item);
 
       return `
         <tr data-id="${item.id}">
           <td><strong>#${item.id}</strong></td>
-          <td><strong>${escapeHtml(item.name)}</strong></td>
+          <td style="display: flex; align-items: center; gap: 10px;">
+            <img src="${imgSrc}" alt="${escapeHtml(item.name)}" class="table-thumb" onerror="this.src='assets/food/default-food.jpg'">
+            <div>
+              <strong>${escapeHtml(item.name)}</strong>
+            </div>
+          </td>
           <td><span class="badge badge-neutral">${escapeHtml(item.category)}</span></td>
-          <td><strong>${item.stock_quantity}</strong></td>
-          <td>${item.stock_threshold}</td>
+          <td>
+            <div class="stock-bar-wrapper">
+              <div class="stock-bar-text">
+                <span>${item.stock_quantity} in stock</span>
+                <span class="text-muted">Threshold: ${item.stock_threshold}</span>
+              </div>
+              <div class="stock-bar">
+                <div class="stock-bar-fill ${fillClass}" style="width: ${percent}%;"></div>
+              </div>
+            </div>
+          </td>
           <td>${statusTag}</td>
           <td class="actions">
-            <div class="table-actions-group">
+            <div style="display: inline-flex; gap: 6px;">
               <button class="btn btn-sm btn-secondary btn-update-stock" data-id="${item.id}" data-stock="${item.stock_quantity}">
                 Update Stock
               </button>
@@ -427,13 +463,12 @@ export class AdminManager {
     }
   }
 
-  // --- ORDERS TAB ---
+  // --- ORDERS TAB (Kitchen Workflow) ---
   async loadOrders() {
     const container = document.getElementById('adminOrdersList');
     if (container) container.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading orders...</div>`;
 
     try {
-      // Build menu map if needed
       if (this.menuItems.length === 0) {
         const inv = await apiClient.getInventory();
         this.menuItems = inv || [];
@@ -454,23 +489,22 @@ export class AdminManager {
     if (!container) return;
 
     if (this.orders.length === 0) {
-      container.innerHTML = `<div class="empty-state"><span class="empty-state-icon">📋</span><h3 class="empty-state-title">No orders found</h3><p class="empty-state-desc">There are no orders matching the selected filter.</p></div>`;
+      container.innerHTML = `<div class="empty-state"><span class="empty-state-icon">📋</span><h3 class="empty-state-title">No orders found</h3><p class="empty-state-desc">There are no kitchen orders matching the selected filter.</p></div>`;
       return;
     }
 
     container.innerHTML = this.orders.map(order => {
       const status = (order.status || '').toLowerCase();
       
-      // Determine valid transition buttons
       let actionButtons = '';
       if (status === 'pending') {
         actionButtons = `
-          <button class="btn btn-sm btn-primary btn-advance-order" data-id="${order.id}" data-next="preparing">🍳 Start Preparing</button>
+          <button class="btn btn-sm btn-accent btn-advance-order" data-id="${order.id}" data-next="preparing">🍳 Start Preparing</button>
           <button class="btn btn-sm btn-outline-danger btn-advance-order" data-id="${order.id}" data-next="cancelled">✕ Cancel</button>
         `;
       } else if (status === 'preparing') {
         actionButtons = `
-          <button class="btn btn-sm btn-success btn-advance-order" data-id="${order.id}" data-next="ready">✓ Mark Ready</button>
+          <button class="btn btn-sm btn-success btn-advance-order" data-id="${order.id}" data-next="ready">🔔 Mark Ready</button>
           <button class="btn btn-sm btn-outline-danger btn-advance-order" data-id="${order.id}" data-next="cancelled">✕ Cancel</button>
         `;
       } else if (status === 'ready') {
@@ -479,12 +513,12 @@ export class AdminManager {
           <button class="btn btn-sm btn-outline-danger btn-advance-order" data-id="${order.id}" data-next="cancelled">✕ Cancel</button>
         `;
       } else {
-        actionButtons = `<span class="text-muted" style="font-size: var(--font-size-xs)">Terminal state</span>`;
+        actionButtons = `<span class="badge badge-neutral">Completed Workflow</span>`;
       }
 
       const itemsSummary = (order.items || []).map(i => {
         const name = this.menuMap[i.menu_item_id] || `Item #${i.menu_item_id}`;
-        return `<div>• ${escapeHtml(name)} × ${i.quantity} (${formatPrice(i.price_at_order_time)})</div>`;
+        return `<div><strong>${i.quantity}×</strong> ${escapeHtml(name)} <span class="text-muted">(${formatPrice(i.price_at_order_time)})</span></div>`;
       }).join('');
 
       return `
@@ -501,17 +535,17 @@ export class AdminManager {
           </div>
 
           <div class="order-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md)">
-            <div style="font-size: var(--font-size-sm); color: var(--text-secondary)">
+            <div style="font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.6;">
               ${itemsSummary}
             </div>
 
-            <div style="display: flex; align-items: center; gap: var(--spacing-lg)">
+            <div style="display: flex; align-items: center; gap: var(--spacing-xl);">
               <div style="text-align: right">
-                <div style="font-size: var(--font-size-xs); color: var(--text-muted)">Total Amount</div>
-                <div style="font-size: var(--font-size-lg); font-weight: 700; color: var(--primary)">${formatPrice(order.total_price)}</div>
+                <div style="font-size: var(--font-size-xs); color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Total</div>
+                <div style="font-size: 1.35rem; font-weight: 800; color: var(--accent);">${formatPrice(order.total_price)}</div>
               </div>
 
-              <div style="display: flex; gap: var(--spacing-xs)">
+              <div style="display: flex; gap: 8px;">
                 ${actionButtons}
               </div>
             </div>
