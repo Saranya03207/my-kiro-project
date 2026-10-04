@@ -6,5 +6,6 @@ from backend.services.auth_service import AuthService
 from backend.services.menu_service import MenuService
 from backend.services.inventory_service import InventoryService
 from backend.services.order_service import OrderService
+from backend.services.analytics_service import AnalyticsService
 
-__all__ = ["AuthService", "MenuService", "InventoryService", "OrderService"]
+__all__ = ["AuthService", "MenuService", "InventoryService", "OrderService", "AnalyticsService"]
