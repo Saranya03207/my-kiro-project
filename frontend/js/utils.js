@@ -153,7 +153,11 @@ export function getOrderTimelineHtml(status) {
   if (s === 'cancelled') {
     return `
       <div class="order-cancelled-banner">
-        <span class="cancel-icon">✕</span>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
         <div>
           <strong>Order Cancelled</strong>
           <p>This booking was cancelled. Please place a new order if needed.</p>
@@ -162,11 +166,29 @@ export function getOrderTimelineHtml(status) {
     `;
   }
 
+  const checkIcon = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
   const stages = [
-    { key: 'pending', label: 'Order Placed', icon: '📝' },
-    { key: 'preparing', label: 'In Kitchen', icon: '🍳' },
-    { key: 'ready', label: 'Ready for Pickup', icon: '🔔' },
-    { key: 'completed', label: 'Completed', icon: '✨' }
+    { 
+      key: 'pending', 
+      label: 'Order Placed', 
+      icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>` 
+    },
+    { 
+      key: 'preparing', 
+      label: 'In Kitchen', 
+      icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 13.84V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v7.84"></path><path d="M3 10h18"></path><path d="M12 18v4"></path><path d="M8 22h8"></path></svg>` 
+    },
+    { 
+      key: 'ready', 
+      label: 'Ready for Pickup', 
+      icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>` 
+    },
+    { 
+      key: 'completed', 
+      label: 'Completed', 
+      icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>` 
+    }
   ];
 
   const stageOrder = ['pending', 'preparing', 'ready', 'completed'];
@@ -180,7 +202,7 @@ export function getOrderTimelineHtml(status) {
     return `
       <div class="timeline-step ${stateClass}">
         <div class="timeline-marker">
-          ${stateClass === 'done' ? '✓' : stage.icon}
+          ${stateClass === 'done' ? checkIcon : stage.icon}
         </div>
         <div class="timeline-label">${stage.label}</div>
       </div>
@@ -188,4 +210,74 @@ export function getOrderTimelineHtml(status) {
   }).join('<div class="timeline-connector"></div>');
 
   return `<div class="order-timeline">${stepsHtml}</div>`;
+}
+
+/**
+ * Prominent top-right visual notification when an order becomes ready for pickup
+ * Displays clean celebratory SVG icon, order ID, instructions, and View Order button
+ */
+export function showOrderReadyNotification(order, onViewOrder = null) {
+  let container = document.getElementById('orderReadyContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'orderReadyContainer';
+    container.className = 'order-ready-container';
+    document.body.appendChild(container);
+  }
+
+  const notification = document.createElement('div');
+  notification.className = 'order-ready-toast';
+  notification.setAttribute('role', 'alert');
+  notification.setAttribute('aria-live', 'assertive');
+
+  notification.innerHTML = `
+    <div class="order-ready-toast-icon">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        <circle cx="18" cy="4" r="3" fill="#10b981" stroke="none"></circle>
+      </svg>
+    </div>
+    <div class="order-ready-toast-content">
+      <div class="order-ready-toast-title">YOUR ORDER IS READY</div>
+      <div class="order-ready-toast-desc">Order #${order.id} is ready for pickup.</div>
+      <div class="order-ready-toast-actions">
+        <button type="button" class="btn btn-sm btn-primary btn-view-ready-order" data-order-id="${order.id}">
+          View Order
+        </button>
+      </div>
+    </div>
+    <button type="button" class="order-ready-toast-close" aria-label="Dismiss order ready notification">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  `;
+
+  let dismissTimer = null;
+
+  const dismiss = () => {
+    if (dismissTimer) clearTimeout(dismissTimer);
+    notification.classList.add('dismissing');
+    setTimeout(() => notification.remove(), 250);
+  };
+
+  const btnView = notification.querySelector('.btn-view-ready-order');
+  if (btnView && typeof onViewOrder === 'function') {
+    btnView.addEventListener('click', () => {
+      onViewOrder(order.id);
+      dismiss();
+    });
+  }
+
+  const btnClose = notification.querySelector('.order-ready-toast-close');
+  if (btnClose) {
+    btnClose.addEventListener('click', dismiss);
+  }
+
+  container.appendChild(notification);
+
+  // Auto-dismiss after 10 seconds
+  dismissTimer = setTimeout(dismiss, 10000);
 }

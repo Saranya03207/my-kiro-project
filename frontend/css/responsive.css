@@ -160,4 +160,20 @@
   .modal-footer .btn {
     width: 100%;
   }
+
+  .order-ready-container {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+  }
+
+  .order-ready-toast {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .sound-toggle-btn span {
+    display: none; /* Icon-only on very compact mobile displays */
+  }
 }
+

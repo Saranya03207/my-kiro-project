@@ -21,6 +21,17 @@
       </div>
 
       <div class="header-actions">
+        <!-- Sound Notification Toggle (SVG Icon, No Emoji) -->
+        <button 
+          type="button" 
+          class="btn btn-secondary btn-sm sound-toggle-btn" 
+          id="btnSoundToggle" 
+          aria-label="Toggle sound notifications" 
+          title="Toggle order ready sound notifications"
+        >
+          <!-- Populated dynamically with SVG icon and text -->
+        </button>
+
         <div class="user-profile">
           <div class="user-avatar" id="userAvatar">S</div>
           <div class="user-details">
@@ -249,6 +260,7 @@
     import cartManager from './js/cart.js';
     import orderManager from './js/orders.js';
     import { debounce, showModal, hideModal, getTimeGreeting } from './js/utils.js';
+    import { updateSoundToggleUI, toggleSound } from './js/audio.js';
 
     document.addEventListener('DOMContentLoaded', async () => {
       // Route Guard - Must be student
@@ -264,6 +276,16 @@
       if (avatarEl && studentId) avatarEl.textContent = studentId.charAt(0).toUpperCase();
       const bannerGreeting = document.getElementById('studentGreetingTitle');
       if (bannerGreeting) bannerGreeting.textContent = `${getTimeGreeting()}, ${studentId} 👋`;
+
+      // Initialize Sound Notification Toggle
+      const soundToggleBtn = document.getElementById('btnSoundToggle');
+      if (soundToggleBtn) {
+        updateSoundToggleUI(soundToggleBtn);
+        soundToggleBtn.addEventListener('click', () => {
+          toggleSound();
+          updateSoundToggleUI(soundToggleBtn);
+        });
+      }
 
       // Tab Switching
       const tabBtns = document.querySelectorAll('.tab-btn');

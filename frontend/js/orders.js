@@ -1,6 +1,7 @@
 /**
  * Student Order Management & Status Tracking
- * Enhanced with visual order timeline and item resolution
+ * Enhanced with visual order timeline, item resolution,
+ * and Ready-for-Pickup sound/visual notifications.
  */
 
 import apiClient from './api.js';
@@ -11,8 +12,10 @@ import {
   getOrderTimelineHtml, 
   escapeHtml, 
   getFoodImage, 
-  showToast 
+  showToast,
+  showOrderReadyNotification
 } from './utils.js';
+import { playOrderReadySound } from './audio.js';
 
 export class OrderManager {
   constructor() {
@@ -20,6 +23,8 @@ export class OrderManager {
     this.menuMap = {}; // menu_item_id -> { name, price, category }
     this.pollTimer = null;
     this.currentFilter = 'all';
+    this.knownOrderStatuses = new Map(); // orderId -> last seen status
+    this.isInitialLoad = true; // Guard against notifications on page load/refresh
   }
 
   async initMenuMap() {
@@ -50,6 +55,7 @@ export class OrderManager {
 
       const orders = await apiClient.getOrderHistory();
       this.orders = orders || [];
+      this.detectStatusTransitions(this.orders);
       this.renderOrders();
 
       // Check if auto-refresh is needed for active orders
@@ -72,7 +78,7 @@ export class OrderManager {
     if (this.pollTimer) return;
     this.pollTimer = setInterval(() => {
       this.silentRefresh();
-    }, 6000);
+    }, 5000);
   }
 
   stopPolling() {
@@ -86,7 +92,9 @@ export class OrderManager {
     try {
       const orders = await apiClient.getOrderHistory();
       this.orders = orders || [];
+      this.detectStatusTransitions(this.orders);
       this.renderOrders();
+
       const hasActive = this.orders.some(o => ['pending', 'preparing', 'ready'].includes((o.status || '').toLowerCase()));
       if (!hasActive) {
         this.stopPolling();
@@ -94,6 +102,69 @@ export class OrderManager {
     } catch {
       // Ignore background refresh errors
     }
+  }
+
+  /**
+   * Status transition detector strictly enforcing:
+   * previousStatus !== "ready" AND currentStatus === "ready"
+   * - Does NOT trigger on initial page load / refresh
+   * - Does NOT trigger repeatedly on consecutive polls of ready orders
+   * - Tracks each order independently by order ID
+   */
+  detectStatusTransitions(newOrders) {
+    if (this.isInitialLoad) {
+      // Record initial baseline status for all existing orders without notifying
+      newOrders.forEach(o => {
+        this.knownOrderStatuses.set(o.id, (o.status || '').toLowerCase());
+      });
+      this.isInitialLoad = false;
+      return;
+    }
+
+    newOrders.forEach(order => {
+      const currentStatus = (order.status || '').toLowerCase();
+      const prevStatus = this.knownOrderStatuses.get(order.id);
+
+      // Trigger condition strictly on transition INTO "ready"
+      if (prevStatus && prevStatus !== 'ready' && currentStatus === 'ready') {
+        this.handleOrderBecameReady(order);
+      }
+
+      this.knownOrderStatuses.set(order.id, currentStatus);
+    });
+  }
+
+  /**
+   * Handles an observed transition into ready state
+   * Plays chime and renders prominent visual notification
+   */
+  handleOrderBecameReady(order) {
+    // 1. Play pleasant local chime notification (with Web Audio fallback and autoplay safety)
+    playOrderReadySound();
+
+    // 2. Display prominent top-right notification banner (always shown, even if sound is off/blocked)
+    showOrderReadyNotification(order, (orderId) => {
+      this.navigateToOrder(orderId);
+    });
+  }
+
+  /**
+   * Switch to My Orders tab and smoothly focus on the targeted ready order
+   */
+  navigateToOrder(orderId) {
+    const tabOrdersBtn = document.querySelector('[data-tab="tabOrders"]');
+    if (tabOrdersBtn) {
+      tabOrdersBtn.click();
+    }
+
+    setTimeout(() => {
+      const card = document.querySelector(`[data-order-id="${orderId}"]`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('order-card-target-focus');
+        setTimeout(() => card.classList.remove('order-card-target-focus'), 2500);
+      }
+    }, 120);
   }
 
   setFilter(filter) {
@@ -124,6 +195,8 @@ export class OrderManager {
     if (emptyEl) emptyEl.classList.add('hidden');
 
     listEl.innerHTML = filtered.map(order => {
+      const statusLower = (order.status || '').toLowerCase();
+      const isReady = statusLower === 'ready';
       const timelineHtml = getOrderTimelineHtml(order.status);
 
       const itemsHtml = (order.items || []).map(item => {
@@ -147,9 +220,25 @@ export class OrderManager {
         `;
       }).join('');
 
+      // Prominent ready-for-pickup banner displayed inside ready order cards
+      const readyBannerHtml = isReady ? `
+        <div class="ready-pickup-banner">
+          <div class="ready-pickup-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="ready-pickup-text">
+            <strong>READY FOR PICKUP</strong>
+            <span>Your order is ready! Please collect it from the canteen counter.</span>
+          </div>
+        </div>
+      ` : '';
+
       return `
-        <div class="order-card" data-order-id="${order.id}">
-          <div class="order-header">
+        <div class="order-card ${isReady ? 'order-ready-highlight' : ''}" data-order-id="${order.id}">
+          <div class="order-header ${isReady ? 'order-header-ready' : ''}">
             <div class="order-meta">
               <span class="order-id">Order #${order.id}</span>
               <span class="order-date">Placed: ${formatDateTime(order.created_at)}</span>
@@ -158,6 +247,8 @@ export class OrderManager {
               ${getStatusBadge(order.status)}
             </div>
           </div>
+
+          ${readyBannerHtml}
 
           <div class="order-body">
             <!-- Visual Order Timeline -->
