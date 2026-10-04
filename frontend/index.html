@@ -27,13 +27,13 @@
 
         <div class="floating-badges">
           <div class="floating-pill">
-            <span>🍔</span> <span>Fresh Daily Meals</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path><path d="M6 2v20"></path><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2"></path></svg> <span>Fresh Daily Meals</span>
           </div>
           <div class="floating-pill">
-            <span>⚡</span> <span>Fast Counter Pickup</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> <span>Fast Counter Pickup</span>
           </div>
           <div class="floating-pill">
-            <span>🥤</span> <span>Chilled Refreshments</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg> <span>Chilled Refreshments</span>
           </div>
         </div>
       </div>
@@ -47,7 +47,9 @@
     <div class="login-form-panel">
       <div class="login-card">
         <div class="login-brand-header">
-          <div class="login-brand-logo">🍲</div>
+          <div class="login-brand-logo">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path><path d="M6 2v20"></path><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2"></path></svg>
+          </div>
           <h2>Smart Canteen Manager</h2>
           <p>Welcome back! Select your role to sign in.</p>
         </div>
@@ -58,11 +60,11 @@
             <label class="form-label">Sign in as</label>
             <div class="role-tabs" id="roleSelector">
               <button type="button" class="role-tab-btn active" data-role="student">
-                <span>🎓</span>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 <span>Student</span>
               </button>
               <button type="button" class="role-tab-btn" data-role="admin">
-                <span>🛠️</span>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                 <span>Administrator</span>
               </button>
             </div>
@@ -90,7 +92,7 @@
 
           <!-- Quick Tip -->
           <div style="margin-top: var(--spacing-md); padding: 10px; background: var(--surface-alt); border-radius: var(--radius-sm); border: 1px dashed var(--border); font-size: var(--font-size-xs); text-align: center; color: var(--text-muted);" id="demoHint">
-            💡 <strong>Quick Login Tip:</strong> For Student use ID <code>S001</code>. For Admin use ID <code>admin001</code>.
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg><strong>Quick Login Tip:</strong> For Student use ID <code>S001</code>. For Admin use ID <code>admin001</code>.
           </div>
         </form>
       </div>
@@ -114,6 +116,8 @@
       const form = document.getElementById('loginForm');
       const btnLogin = document.getElementById('btnLogin');
 
+      const infoIcon = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+
       // Role button toggles
       roleButtons.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -124,10 +128,10 @@
 
           if (selectedRole === 'admin') {
             userIdInput.placeholder = 'e.g. admin001';
-            demoHint.innerHTML = '💡 <strong>Admin Sign In:</strong> Use Administrator ID <code>admin001</code>';
+            demoHint.innerHTML = `${infoIcon}<strong>Admin Sign In:</strong> Use Administrator ID <code>admin001</code>`;
           } else {
             userIdInput.placeholder = 'e.g. S001';
-            demoHint.innerHTML = '💡 <strong>Student Sign In:</strong> Use Student ID <code>S001</code>';
+            demoHint.innerHTML = `${infoIcon}<strong>Student Sign In:</strong> Use Student ID <code>S001</code>`;
           }
         });
       });

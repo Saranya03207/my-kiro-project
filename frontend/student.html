@@ -13,7 +13,9 @@
   <header class="app-header">
     <div class="container header-content">
       <div class="header-brand">
-        <div class="brand-icon">🍲</div>
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path><path d="M6 2v20"></path><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2"></path></svg>
+        </div>
         <div class="brand-info">
           <h1>Smart Canteen Manager</h1>
           <span>Student Portal</span>
@@ -53,14 +55,17 @@
       <!-- Navigation Tabs -->
       <nav class="tab-nav" role="tablist">
         <button class="tab-btn active" data-tab="tabMenu" role="tab" aria-selected="true">
-          <span>🍽️ Menu</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path><path d="M6 2v20"></path><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2"></path></svg>
+          <span>Menu</span>
         </button>
         <button class="tab-btn" data-tab="tabCart" role="tab" aria-selected="false">
-          <span>🛒 Cart</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+          <span>Cart</span>
           <span class="badge badge-count hidden" id="cartBadgeCount">0</span>
         </button>
         <button class="tab-btn" data-tab="tabOrders" role="tab" aria-selected="false">
-          <span>📋 My Orders</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-8"></path><path d="M16 12h-8"></path><path d="M12 16h-4"></path></svg>
+          <span>My Orders</span>
         </button>
       </nav>
 
@@ -68,13 +73,15 @@
       <section class="tab-content active" id="tabMenu" role="tabpanel">
         <!-- Student Personalized Greeting Box -->
         <div class="student-greeting-box">
-          <h2 class="student-greeting-title" id="studentGreetingTitle">Good afternoon, Student 👋</h2>
+          <h2 class="student-greeting-title" id="studentGreetingTitle">Good afternoon, Student</h2>
           <p class="student-greeting-sub">Fresh campus meals &amp; snacks prepared to order. Skip the queue!</p>
         </div>
 
         <div class="filter-bar">
           <div class="search-box">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
             <input 
               type="text" 
               id="menuSearchInput" 
@@ -92,7 +99,10 @@
         <!-- Featured / Popular Highlights -->
         <div class="featured-section hidden" id="featuredSection">
           <div class="featured-header">
-            <h3>🔥 Popular Today</h3>
+            <h3>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--accent);"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>
+              <span>Popular Today</span>
+            </h3>
             <span class="badge badge-neutral">Campus Favorites</span>
           </div>
           <div class="food-grid" id="featuredGrid">
@@ -117,7 +127,9 @@
 
         <!-- Empty State -->
         <div class="empty-state hidden" id="menuEmptyState">
-          <span class="empty-state-icon">🍽️</span>
+          <span class="empty-state-icon" style="color: var(--gray-400);">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path><path d="M6 2v20"></path><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2"></path></svg>
+          </span>
           <h3 class="empty-state-title">No Food Items Found</h3>
           <p class="empty-state-desc">Try clearing your search query or picking a different category filter.</p>
         </div>
@@ -141,7 +153,9 @@
 
             <!-- Empty Cart State -->
             <div class="empty-state" id="cartEmptyState">
-              <span class="empty-state-icon">🛒</span>
+              <span class="empty-state-icon" style="color: var(--gray-400);">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+              </span>
               <h3 class="empty-state-title">Your cart is empty</h3>
               <p class="empty-state-desc">Browse our delicious canteen menu and add items to your cart to book.</p>
               <button class="btn btn-primary" id="btnBrowseMenu" style="margin-top: var(--spacing-md)">
@@ -173,8 +187,9 @@
               Place Food Booking
             </button>
 
-            <p class="text-muted" style="font-size: var(--font-size-xs); margin-top: var(--spacing-md); text-align: center;">
-              ⚡ Your order will be sent instantly to the kitchen for preparation.
+            <p class="text-muted" style="font-size: var(--font-size-xs); margin-top: var(--spacing-md); text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary);"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              <span>Your order will be sent instantly to the kitchen for preparation.</span>
             </p>
           </div>
         </div>
@@ -197,7 +212,8 @@
             </div>
 
             <button class="btn btn-sm btn-secondary" id="btnRefreshOrders" title="Refresh Orders">
-              ↻ Refresh
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+              <span>Refresh</span>
             </button>
           </div>
         </div>
@@ -215,7 +231,9 @@
 
         <!-- Empty Orders State -->
         <div class="empty-state hidden" id="ordersEmptyState">
-          <span class="empty-state-icon">📋</span>
+          <span class="empty-state-icon" style="color: var(--gray-400);">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-8"></path><path d="M16 12h-8"></path><path d="M12 16h-4"></path></svg>
+          </span>
           <h3 class="empty-state-title">No Orders Placed Yet</h3>
           <p class="empty-state-desc">You have not placed any canteen orders matching this filter.</p>
         </div>
@@ -234,11 +252,16 @@
   <div class="modal-backdrop hidden" id="orderSuccessModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">🎉 Booking Confirmed!</h3>
+        <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--success);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <span>Booking Confirmed!</span>
+        </h3>
         <button class="modal-close-btn" id="closeSuccessModal">&times;</button>
       </div>
       <div class="modal-body" style="text-align: center; padding: var(--spacing-xl);">
-        <div style="font-size: 3.5rem; margin-bottom: var(--spacing-sm);">🍽️</div>
+        <div style="display: flex; justify-content: center; margin-bottom: var(--spacing-sm); color: var(--success);">
+          <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
         <h4 style="margin-bottom: var(--spacing-xs);">Your order has been placed!</h4>
         <p style="margin-bottom: var(--spacing-md);">Order ID: <strong id="successOrderId" style="font-size: 1.2rem; color: var(--primary);">#--</strong></p>
         <p class="alert alert-info" style="text-align: left;">
@@ -275,7 +298,7 @@
       const avatarEl = document.getElementById('userAvatar');
       if (avatarEl && studentId) avatarEl.textContent = studentId.charAt(0).toUpperCase();
       const bannerGreeting = document.getElementById('studentGreetingTitle');
-      if (bannerGreeting) bannerGreeting.textContent = `${getTimeGreeting()}, ${studentId} 👋`;
+      if (bannerGreeting) bannerGreeting.textContent = `${getTimeGreeting()}, ${studentId}`;
 
       // Initialize Sound Notification Toggle
       const soundToggleBtn = document.getElementById('btnSoundToggle');

@@ -5,7 +5,7 @@
 
 import apiClient from './api.js';
 import AuthService from './auth.js';
-import { formatPrice, showToast, escapeHtml, getFoodImage } from './utils.js';
+import { formatPrice, showToast, escapeHtml, getFoodImage, getSvgIcon } from './utils.js';
 
 export class CartManager {
   constructor() {
@@ -170,8 +170,8 @@ export class CartManager {
             ${formatPrice(item.price * item.quantity)}
           </div>
 
-          <button class="btn btn-sm btn-outline-danger btn-remove" data-id="${item.id}" title="Remove item">
-            ✕
+          <button class="btn btn-sm btn-outline-danger btn-remove" data-id="${item.id}" title="Remove item" aria-label="Remove item">
+            ${getSvgIcon('trash', 14)}
           </button>
         </div>
       `;

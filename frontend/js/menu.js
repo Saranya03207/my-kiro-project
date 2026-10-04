@@ -5,7 +5,7 @@
 
 import apiClient from './api.js';
 import cartManager from './cart.js';
-import { formatPrice, escapeHtml, getCategoryEmoji, getFoodImage, showToast } from './utils.js';
+import { formatPrice, escapeHtml, getCategoryIcon, getCategoryEmoji, getSvgIcon, getFoodImage, showToast } from './utils.js';
 
 export class MenuManager {
   constructor() {
@@ -70,7 +70,7 @@ export class MenuManager {
     const list = Array.from(this.categories);
     container.innerHTML = list.map(cat => `
       <button class="filter-chip ${cat === this.currentCategory ? 'active' : ''}" data-category="${escapeHtml(cat)}">
-        <span>${cat === 'All' ? '🍽️' : getCategoryEmoji(cat)}</span>
+        <span style="display: inline-flex; align-items: center;">${getCategoryIcon(cat, 16)}</span>
         <span>${escapeHtml(cat)}</span>
       </button>
     `).join('');
@@ -124,11 +124,11 @@ export class MenuManager {
     
     let stockBadge = '';
     if (isOutOfStock) {
-      stockBadge = '<span class="badge badge-error">Out of Stock</span>';
+      stockBadge = `<span class="badge badge-error">${getSvgIcon('xCircle', 12)} Out of Stock</span>`;
     } else if (isLowStock) {
-      stockBadge = `<span class="badge badge-warning">Only ${item.stock_quantity} Left</span>`;
+      stockBadge = `<span class="badge badge-warning">${getSvgIcon('alertTriangle', 12)} Only ${item.stock_quantity} Left</span>`;
     } else {
-      stockBadge = `<span class="badge badge-success">✓ Available</span>`;
+      stockBadge = `<span class="badge badge-success">${getSvgIcon('checkCircle', 12)} Available</span>`;
     }
 
     const currentQty = this.quantities[item.id] || 1;
@@ -144,7 +144,7 @@ export class MenuManager {
             loading="lazy"
             onerror="this.onerror=null; this.src='assets/food/default-food.jpg';"
           >
-          <span class="food-card-category-pill">${getCategoryEmoji(item.category)} ${escapeHtml(item.category)}</span>
+          <span class="food-card-category-pill">${getCategoryIcon(item.category, 14)} ${escapeHtml(item.category)}</span>
           <div class="food-card-stock-pill">${stockBadge}</div>
         </div>
 

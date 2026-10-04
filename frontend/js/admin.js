@@ -12,7 +12,8 @@ import {
   getFoodImage, 
   showToast, 
   showModal, 
-  hideModal 
+  hideModal,
+  getSvgIcon
 } from './utils.js';
 
 export class AdminManager {
@@ -136,13 +137,13 @@ export class AdminManager {
     if (!container) return;
 
     if (items.length === 0) {
-      container.innerHTML = `<div class="alert alert-success"><span>✓</span> <div><strong>All Stocks Healthy:</strong> All canteen inventory items are stocked above their shortage threshold.</div></div>`;
+      container.innerHTML = `<div class="alert alert-success"><span style="display: inline-flex; align-items: center;">${getSvgIcon('checkCircle', 18)}</span> <div><strong>All Stocks Healthy:</strong> All canteen inventory items are stocked above their shortage threshold.</div></div>`;
       return;
     }
 
     container.innerHTML = `
       <div class="alert alert-warning">
-        <span style="font-size: 1.3rem;">⚠</span>
+        <span style="display: inline-flex; align-items: center;">${getSvgIcon('alertTriangle', 18)}</span>
         <div>
           <strong>${items.length} item(s) running low on inventory stock:</strong>
           <ul style="margin-top: 4px; padding-left: 20px;">
@@ -192,7 +193,7 @@ export class AdminManager {
           <td><strong>${item.stock_quantity}</strong></td>
           <td>
             <button class="btn btn-sm ${item.is_available ? 'btn-success' : 'btn-secondary'} btn-toggle-avail" data-id="${item.id}">
-              ${item.is_available ? '✓ Available' : '✕ Disabled'}
+              ${item.is_available ? `${getSvgIcon('check', 14)} Available` : `${getSvgIcon('x', 14)} Disabled`}
             </button>
           </td>
           <td class="actions">
@@ -489,7 +490,7 @@ export class AdminManager {
     if (!container) return;
 
     if (this.orders.length === 0) {
-      container.innerHTML = `<div class="empty-state"><span class="empty-state-icon">📋</span><h3 class="empty-state-title">No orders found</h3><p class="empty-state-desc">There are no kitchen orders matching the selected filter.</p></div>`;
+      container.innerHTML = `<div class="empty-state"><span class="empty-state-icon" style="color: var(--text-muted);">${getSvgIcon('receipt', 48)}</span><h3 class="empty-state-title">No orders found</h3><p class="empty-state-desc">There are no kitchen orders matching the selected filter.</p></div>`;
       return;
     }
 
@@ -499,18 +500,18 @@ export class AdminManager {
       let actionButtons = '';
       if (status === 'pending') {
         actionButtons = `
-          <button class="btn btn-sm btn-accent btn-advance-order" data-id="${order.id}" data-next="preparing">🍳 Start Preparing</button>
-          <button class="btn btn-sm btn-outline-danger btn-advance-order" data-id="${order.id}" data-next="cancelled">✕ Cancel</button>
+          <button class="btn btn-sm btn-accent btn-advance-order" data-id="${order.id}" data-next="preparing">${getSvgIcon('chef', 16)} Start Preparing</button>
+          <button class="btn btn-sm btn-outline-danger btn-advance-order" data-id="${order.id}" data-next="cancelled">${getSvgIcon('xCircle', 14)} Cancel</button>
         `;
       } else if (status === 'preparing') {
         actionButtons = `
-          <button class="btn btn-sm btn-success btn-advance-order" data-id="${order.id}" data-next="ready">🔔 Mark Ready</button>
-          <button class="btn btn-sm btn-outline-danger btn-advance-order" data-id="${order.id}" data-next="cancelled">✕ Cancel</button>
+          <button class="btn btn-sm btn-success btn-advance-order" data-id="${order.id}" data-next="ready">${getSvgIcon('bell', 16)} Mark Ready</button>
+          <button class="btn btn-sm btn-outline-danger btn-advance-order" data-id="${order.id}" data-next="cancelled">${getSvgIcon('xCircle', 14)} Cancel</button>
         `;
       } else if (status === 'ready') {
         actionButtons = `
-          <button class="btn btn-sm btn-primary btn-advance-order" data-id="${order.id}" data-next="completed">✓ Mark Completed</button>
-          <button class="btn btn-sm btn-outline-danger btn-advance-order" data-id="${order.id}" data-next="cancelled">✕ Cancel</button>
+          <button class="btn btn-sm btn-primary btn-advance-order" data-id="${order.id}" data-next="completed">${getSvgIcon('checkCircle', 16)} Mark Completed</button>
+          <button class="btn btn-sm btn-outline-danger btn-advance-order" data-id="${order.id}" data-next="cancelled">${getSvgIcon('xCircle', 14)} Cancel</button>
         `;
       } else {
         actionButtons = `<span class="badge badge-neutral">Completed Workflow</span>`;
