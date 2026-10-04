@@ -4,5 +4,6 @@ Contains business logic separated from route handlers.
 """
 from backend.services.auth_service import AuthService
 from backend.services.menu_service import MenuService
+from backend.services.inventory_service import InventoryService
 
-__all__ = ["AuthService", "MenuService"]
+__all__ = ["AuthService", "MenuService", "InventoryService"]
