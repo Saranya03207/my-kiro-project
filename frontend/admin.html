@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Smart Canteen Manager</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="container header-content">
+      <div class="header-brand">
+        <div class="brand-icon" style="background: linear-gradient(135deg, #0f172a, #334155);">🛠️</div>
+        <div class="brand-info">
+          <h1>Smart Canteen Manager</h1>
+          <span>Admin Workspace</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="user-profile">
+          <div class="user-avatar" style="background: #fef3c7; color: #92400e;">A</div>
+          <div class="user-details">
+            <span class="user-name" id="userGreeting">Admin</span>
+            <span class="user-role-tag" style="color: #92400e; font-weight: 700;">Administrator</span>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary btn-sm" id="btnAdminLogout">
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="app-main">
+    <div class="container">
+      <!-- Navigation Tabs -->
+      <nav class="tab-nav" role="tablist">
+        <button class="tab-btn active" data-tab="tabDashboard" role="tab" aria-selected="true">
+          <span>📊 Dashboard</span>
+        </button>
+        <button class="tab-btn" data-tab="tabMenuMgmt" role="tab" aria-selected="false">
+          <span>🍴 Menu Management</span>
+        </button>
+        <button class="tab-btn" data-tab="tabInventory" role="tab" aria-selected="false">
+          <span>📦 Inventory</span>
+        </button>
+        <button class="tab-btn" data-tab="tabOrdersMgmt" role="tab" aria-selected="false">
+          <span>📋 Incoming Orders</span>
+        </button>
+      </nav>
+
+      <!-- 1. DASHBOARD TAB -->
+      <section class="tab-content active" id="tabDashboard" role="tabpanel">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Canteen Performance Overview</h2>
+            <p class="section-subtitle">Real-time booking metrics, inventory alerts, and daily sales statistics</p>
+          </div>
+          <button class="btn btn-sm btn-secondary" id="btnRefreshDashboard">
+            ↻ Refresh Metrics
+          </button>
+        </div>
+
+        <!-- 4 Metric Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-info">
+              <h3>Today's Revenue</h3>
+              <div class="stat-value" id="statTodayRevenue">$0.00</div>
+              <div class="stat-subtext">Total sales today</div>
+            </div>
+            <div class="stat-icon green">💵</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <h3>Today's Orders</h3>
+              <div class="stat-value" id="statTodayOrders">0</div>
+              <div class="stat-subtext">Total bookings placed</div>
+            </div>
+            <div class="stat-icon blue">🧾</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <h3>Pending Orders</h3>
+              <div class="stat-value" id="statPendingOrders">0</div>
+              <div class="stat-subtext">Awaiting kitchen prep</div>
+            </div>
+            <div class="stat-icon amber">⏳</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <h3>Low Stock Alerts</h3>
+              <div class="stat-value" id="statLowStock">0</div>
+              <div class="stat-subtext">Items below threshold</div>
+            </div>
+            <div class="stat-icon red">⚠️</div>
+          </div>
+        </div>
+
+        <!-- Low Stock Alerts Container -->
+        <div id="lowStockAlertsList" style="margin-bottom: var(--spacing-xl);"></div>
+
+        <!-- Two Columns: Popular Items & Recent Orders -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: var(--spacing-xl);">
+          <!-- Top Popular Items -->
+          <div class="table-card">
+            <div style="padding: var(--spacing-md); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+              <h3 style="font-size: var(--font-size-base); font-weight: 700;">🔥 Top Popular Food Items</h3>
+              <span class="badge badge-info">Past 7 Days</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Food Item</th>
+                    <th>Category</th>
+                    <th>Volume</th>
+                    <th>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody id="popularItemsBody">
+                  <!-- Populated by admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recent Orders -->
+          <div class="table-card">
+            <div style="padding: var(--spacing-md); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+              <h3 style="font-size: var(--font-size-base); font-weight: 700;">🕒 Recent Bookings</h3>
+              <span class="badge badge-neutral">Latest 5</span>
+            </div>
+            <div class="table-responsive" id="recentOrdersList">
+              <!-- Populated by admin.js -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. MENU MANAGEMENT TAB -->
+      <section class="tab-content" id="tabMenuMgmt" role="tabpanel">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Menu Management</h2>
+            <p class="section-subtitle">Add, update, toggle availability, and remove food items</p>
+          </div>
+          <button class="btn btn-primary" id="btnOpenAddMenu">
+            + Add Food Item
+          </button>
+        </div>
+
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Item Name</th>
+                  <th>Category</th>
+                  <th>Current Stock</th>
+                  <th>Availability</th>
+                  <th class="actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminMenuTableBody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. INVENTORY TAB -->
+      <section class="tab-content" id="tabInventory" role="tabpanel">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Inventory &amp; Stock Levels</h2>
+            <p class="section-subtitle">Monitor available quantities and configure threshold shortage triggers</p>
+          </div>
+
+          <div class="filter-chips">
+            <button class="filter-chip active" id="filterInvAll">All Items</button>
+            <button class="filter-chip" id="filterInvLow">⚠️ Low Stock Only</button>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Food Item</th>
+                  <th>Category</th>
+                  <th>Stock Quantity</th>
+                  <th>Alert Threshold</th>
+                  <th>Stock Status</th>
+                  <th class="actions">Quick Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTableBody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. ORDERS MANAGEMENT TAB -->
+      <section class="tab-content" id="tabOrdersMgmt" role="tabpanel">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Incoming Student Orders</h2>
+            <p class="section-subtitle">Process incoming food bookings through kitchen workflows</p>
+          </div>
+
+          <div style="display: flex; gap: var(--spacing-sm); align-items: center; flex-wrap: wrap;">
+            <div class="filter-chips">
+              <button class="filter-chip active" data-admin-order-filter="all">All</button>
+              <button class="filter-chip" data-admin-order-filter="pending">Pending</button>
+              <button class="filter-chip" data-admin-order-filter="preparing">Preparing</button>
+              <button class="filter-chip" data-admin-order-filter="ready">Ready for Pickup</button>
+              <button class="filter-chip" data-admin-order-filter="completed">Completed</button>
+              <button class="filter-chip" data-admin-order-filter="cancelled">Cancelled</button>
+            </div>
+
+            <button class="btn btn-sm btn-secondary" id="btnRefreshAdminOrders">
+              ↻ Refresh Orders
+            </button>
+          </div>
+        </div>
+
+        <!-- Orders Container -->
+        <div class="orders-list" id="adminOrdersList">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="container">
+      <p>&copy; 2026 Kiro University Smart Canteen Booking System • Administrator Workspace</p>
+    </div>
+  </footer>
+
+  <!-- Modal: Add / Edit Menu Item -->
+  <div class="modal-backdrop hidden" id="menuItemModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="menuItemModalTitle">Add New Food Item</h3>
+        <button class="modal-close-btn" id="closeMenuItemModal">&times;</button>
+      </div>
+
+      <form id="menuItemForm">
+        <input type="hidden" id="menuItemId">
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="menuItemName">Item Name <span class="required">*</span></label>
+            <input type="text" id="menuItemName" class="form-input" placeholder="e.g. Classic Cheeseburger" required maxlength="100">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="menuItemCategory">Category <span class="required">*</span></label>
+              <select id="menuItemCategory" class="form-select" required>
+                <option value="Meals">Meals</option>
+                <option value="Snacks">Snacks</option>
+                <option value="Beverages">Beverages</option>
+                <option value="Desserts">Desserts</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="menuItemPrice">Price ($) <span class="required">*</span></label>
+              <input type="number" id="menuItemPrice" class="form-input" placeholder="9.99" step="0.01" min="0.01" max="9999.99" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="menuItemDesc">Description <span class="required">*</span></label>
+            <textarea id="menuItemDesc" class="form-textarea" placeholder="Delicious ingredients and preparation notes..." required maxlength="500"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="menuItemStock">Initial Stock <span class="required">*</span></label>
+              <input type="number" id="menuItemStock" class="form-input" value="10" min="0" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="menuItemThreshold">Alert Threshold <span class="required">*</span></label>
+              <input type="number" id="menuItemThreshold" class="form-input" value="3" min="0" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelMenuItemModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveMenuItemBtn">Save Food Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Delete Confirmation -->
+  <div class="modal-backdrop hidden" id="confirmDeleteModal">
+    <div class="modal-dialog" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Delete Menu Item</h3>
+        <button class="modal-close-btn" id="closeDeleteModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete <strong id="deleteItemName">this item</strong> from the canteen menu?</p>
+        <p class="text-muted" style="font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">
+          This item will be soft-deleted and removed from student availability.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+        <button class="btn btn-danger" id="confirmDeleteBtn">Delete Item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Update Stock -->
+  <div class="modal-backdrop hidden" id="updateStockModal">
+    <div class="modal-dialog" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Update Stock Quantity</h3>
+        <button class="modal-close-btn" id="closeStockModal">&times;</button>
+      </div>
+      <form id="stockForm">
+        <input type="hidden" id="stockItemId">
+        <div class="modal-body">
+          <p style="margin-bottom: var(--spacing-sm);">Item: <strong id="stockItemName">--</strong></p>
+          <div class="form-group">
+            <label class="form-label" for="stockQuantityInput">New Stock Quantity <span class="required">*</span></label>
+            <input type="number" id="stockQuantityInput" class="form-input" min="0" required autofocus>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelStockBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Quantity</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Update Threshold -->
+  <div class="modal-backdrop hidden" id="updateThresholdModal">
+    <div class="modal-dialog" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Update Alert Threshold</h3>
+        <button class="modal-close-btn" id="closeThresholdModal">&times;</button>
+      </div>
+      <form id="thresholdForm">
+        <input type="hidden" id="thresholdItemId">
+        <div class="modal-body">
+          <p style="margin-bottom: var(--spacing-sm);">Item: <strong id="thresholdItemName">--</strong></p>
+          <div class="form-group">
+            <label class="form-label" for="thresholdInput">New Alert Threshold <span class="required">*</span></label>
+            <input type="number" id="thresholdInput" class="form-input" min="0" required autofocus>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelThresholdBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Threshold</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Application Logic -->
+  <script type="module">
+    import AuthService from './js/auth.js';
+    import adminManager from './js/admin.js';
+    import { hideModal } from './js/utils.js';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Role Guard - Must be admin
+      const ok = AuthService.requireAuth('admin');
+      if (!ok) return;
+
+      // Tab Switching
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      function switchTab(tabId) {
+        tabBtns.forEach(btn => {
+          const isActive = btn.dataset.tab === tabId;
+          btn.classList.toggle('active', isActive);
+          btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+
+        tabContents.forEach(content => {
+          content.classList.toggle('active', content.id === tabId);
+        });
+
+        if (tabId === 'tabDashboard') {
+          adminManager.loadDashboardData();
+        } else if (tabId === 'tabMenuMgmt') {
+          adminManager.loadMenuManagement();
+        } else if (tabId === 'tabInventory') {
+          adminManager.loadInventory();
+        } else if (tabId === 'tabOrdersMgmt') {
+          adminManager.loadOrders();
+        }
+      }
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      // Refresh Dashboard
+      document.getElementById('btnRefreshDashboard')?.addEventListener('click', () => {
+        adminManager.loadDashboardData();
+      });
+
+      // Open Add Menu Item Modal
+      document.getElementById('btnOpenAddMenu')?.addEventListener('click', () => {
+        adminManager.openAddModal();
+      });
+
+      // Menu Item Form Submit
+      document.getElementById('menuItemForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = {
+          id: document.getElementById('menuItemId').value || null,
+          name: document.getElementById('menuItemName').value,
+          category: document.getElementById('menuItemCategory').value,
+          price: document.getElementById('menuItemPrice').value,
+          description: document.getElementById('menuItemDesc').value,
+          stock_quantity: document.getElementById('menuItemStock').value,
+          stock_threshold: document.getElementById('menuItemThreshold').value
+        };
+        await adminManager.saveMenuItem(formData);
+      });
+
+      // Modal Close Buttons
+      document.getElementById('closeMenuItemModal')?.addEventListener('click', () => hideModal('menuItemModal'));
+      document.getElementById('cancelMenuItemModal')?.addEventListener('click', () => hideModal('menuItemModal'));
+
+      document.getElementById('closeDeleteModal')?.addEventListener('click', () => hideModal('confirmDeleteModal'));
+      document.getElementById('cancelDeleteBtn')?.addEventListener('click', () => hideModal('confirmDeleteModal'));
+      document.getElementById('confirmDeleteBtn')?.addEventListener('click', () => adminManager.confirmDelete());
+
+      // Inventory Filters
+      document.getElementById('filterInvAll')?.addEventListener('click', (e) => {
+        document.getElementById('filterInvLow').classList.remove('active');
+        e.currentTarget.classList.add('active');
+        adminManager.inventoryFilter = 'all';
+        adminManager.renderInventoryTable();
+      });
+
+      document.getElementById('filterInvLow')?.addEventListener('click', (e) => {
+        document.getElementById('filterInvAll').classList.remove('active');
+        e.currentTarget.classList.add('active');
+        adminManager.inventoryFilter = 'low';
+        adminManager.renderInventoryTable();
+      });
+
+      // Stock Form Submit
+      document.getElementById('stockForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = parseInt(document.getElementById('stockItemId').value, 10);
+        const qty = parseInt(document.getElementById('stockQuantityInput').value, 10);
+        await adminManager.saveStock(id, qty);
+      });
+      document.getElementById('closeStockModal')?.addEventListener('click', () => hideModal('updateStockModal'));
+      document.getElementById('cancelStockBtn')?.addEventListener('click', () => hideModal('updateStockModal'));
+
+      // Threshold Form Submit
+      document.getElementById('thresholdForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = parseInt(document.getElementById('thresholdItemId').value, 10);
+        const thresh = parseInt(document.getElementById('thresholdInput').value, 10);
+        await adminManager.saveThreshold(id, thresh);
+      });
+      document.getElementById('closeThresholdModal')?.addEventListener('click', () => hideModal('updateThresholdModal'));
+      document.getElementById('cancelThresholdBtn')?.addEventListener('click', () => hideModal('updateThresholdModal'));
+
+      // Orders Filters
+      document.querySelectorAll('[data-admin-order-filter]').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+          document.querySelectorAll('[data-admin-order-filter]').forEach(c => c.classList.remove('active'));
+          e.currentTarget.classList.add('active');
+          adminManager.ordersFilter = e.currentTarget.dataset.adminOrderFilter;
+          adminManager.loadOrders();
+        });
+      });
+
+      document.getElementById('btnRefreshAdminOrders')?.addEventListener('click', () => {
+        adminManager.loadOrders();
+      });
+
+      // Logout
+      document.getElementById('btnAdminLogout')?.addEventListener('click', () => {
+        AuthService.logout();
+      });
+
+      // Initial Load
+      await adminManager.init();
+    });
+  </script>
+</body>
+</html>

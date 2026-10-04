@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Canteen Manager - Login</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <style>
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-lg);
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+
+    .login-card-header {
+      padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
+      text-align: center;
+      background: linear-gradient(180deg, var(--primary-light) 0%, var(--surface) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .login-logo {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary), #3b82f6);
+      color: white;
+      border-radius: var(--radius-md);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: var(--spacing-sm);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .login-card-header h1 {
+      font-size: var(--font-size-xl);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .login-card-header p {
+      font-size: var(--font-size-sm);
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .login-card-body {
+      padding: var(--spacing-xl);
+    }
+
+    .role-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .role-btn {
+      padding: 12px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: var(--transition);
+    }
+
+    .role-btn span.role-icon {
+      font-size: 1.5rem;
+    }
+
+    .role-btn.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .demo-hint {
+      margin-top: var(--spacing-md);
+      padding: var(--spacing-sm);
+      background: var(--gray-50);
+      border: 1px dashed var(--gray-300);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-card-header">
+        <div class="login-logo">🍲</div>
+        <h1>Smart Canteen Manager</h1>
+        <p>Kiro University Food Booking System</p>
+      </div>
+
+      <div class="login-card-body">
+        <form id="loginForm" autocomplete="off">
+          <div class="form-group">
+            <label class="form-label">Select Role</label>
+            <div class="role-selector" id="roleSelector">
+              <button type="button" class="role-btn active" data-role="student">
+                <span class="role-icon">🎓</span>
+                <span>Student</span>
+              </button>
+              <button type="button" class="role-btn" data-role="admin">
+                <span class="role-icon">🛠️</span>
+                <span>Administrator</span>
+              </button>
+            </div>
+            <input type="hidden" id="roleInput" value="student">
+          </div>
+
+          <div class="form-group">
+            <label for="userIdInput" class="form-label">User ID <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="userIdInput" 
+              class="form-input" 
+              placeholder="e.g. S001 (Student) or admin001" 
+              required 
+              autofocus
+            >
+            <div class="form-error" id="userIdError"></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnLogin">
+            <span>Sign In to Canteen</span>
+          </button>
+
+          <div class="demo-hint" id="demoHint">
+            💡 <strong>Quick Login Tip:</strong> For Student use ID <code>S001</code>. For Admin use ID <code>admin001</code>.
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script type="module">
+    import AuthService from './js/auth.js';
+    import { showToast } from './js/utils.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check if already authenticated
+      AuthService.checkGuest();
+
+      const roleButtons = document.querySelectorAll('.role-btn');
+      const roleInput = document.getElementById('roleInput');
+      const userIdInput = document.getElementById('userIdInput');
+      const demoHint = document.getElementById('demoHint');
+      const form = document.getElementById('loginForm');
+      const btnLogin = document.getElementById('btnLogin');
+
+      // Role button toggles
+      roleButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          roleButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const selectedRole = btn.dataset.role;
+          roleInput.value = selectedRole;
+
+          if (selectedRole === 'admin') {
+            userIdInput.placeholder = 'e.g. admin001';
+            demoHint.innerHTML = '💡 <strong>Admin Sign In:</strong> Use Administrator ID <code>admin001</code>';
+          } else {
+            userIdInput.placeholder = 'e.g. S001';
+            demoHint.innerHTML = '💡 <strong>Student Sign In:</strong> Use Student ID <code>S001</code>';
+          }
+        });
+      });
+
+      // Submit form
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const userId = userIdInput.value.trim();
+        const role = roleInput.value;
+
+        if (!userId) {
+          showToast('Please enter your User ID', 'warning');
+          userIdInput.focus();
+          return;
+        }
+
+        btnLogin.disabled = true;
+        btnLogin.innerHTML = '<span class="spinner"></span> Signing In...';
+
+        try {
+          const success = await AuthService.login(userId, role);
+          if (success) {
+            showToast('Login successful! Redirecting...', 'success');
+            setTimeout(() => {
+              if (role === 'admin') {
+                window.location.href = 'admin.html';
+              } else {
+                window.location.href = 'student.html';
+              }
+            }, 600);
+          } else {
+            btnLogin.disabled = false;
+            btnLogin.innerHTML = 'Sign In to Canteen';
+          }
+        } catch (err) {
+          btnLogin.disabled = false;
+          btnLogin.innerHTML = 'Sign In to Canteen';
+          showToast('Failed to sign in. Please verify your ID.', 'error');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
