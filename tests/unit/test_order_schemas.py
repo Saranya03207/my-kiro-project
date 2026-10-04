@@ -156,31 +156,27 @@ class TestOrderItemResponse:
         """Create valid OrderItemResponse from dictionary."""
         data = {
             "menu_item_id": 1,
-            "menu_item_name": "Burger",
             "quantity": 2,
             "price_at_order_time": Decimal("9.99")
         }
         item = OrderItemResponse(**data)
         assert item.menu_item_id == 1
-        assert item.menu_item_name == "Burger"
         assert item.quantity == 2
         assert item.price_at_order_time == Decimal("9.99")
     
     def test_all_fields_required(self):
-        """All fields are required in OrderItemResponse."""
-        # Missing menu_item_name
-        with pytest.raises(ValidationError):
-            OrderItemResponse(
-                menu_item_id=1,
-                quantity=2,
-                price_at_order_time=Decimal("9.99")
-            )
-        
+        """All required fields must be provided."""
         # Missing quantity
         with pytest.raises(ValidationError):
             OrderItemResponse(
                 menu_item_id=1,
-                menu_item_name="Burger",
+                price_at_order_time=Decimal("9.99")
+            )
+        
+        # Missing menu_item_id
+        with pytest.raises(ValidationError):
+            OrderItemResponse(
+                quantity=2,
                 price_at_order_time=Decimal("9.99")
             )
 
@@ -198,7 +194,6 @@ class TestOrderResponse:
             "items": [
                 {
                     "menu_item_id": 1,
-                    "menu_item_name": "Burger",
                     "quantity": 2,
                     "price_at_order_time": Decimal("9.99")
                 }
@@ -212,7 +207,8 @@ class TestOrderResponse:
         assert order.total_price == Decimal("19.98")
         assert order.status == "pending"
         assert len(order.items) == 1
-        assert order.items[0].menu_item_name == "Burger"
+        assert order.items[0].menu_item_id == 1
+        assert order.items[0].quantity == 2
         assert order.created_at == datetime(2024, 1, 1, 12, 0, 0)
         assert order.updated_at == datetime(2024, 1, 1, 12, 5, 0)
     
@@ -226,19 +222,16 @@ class TestOrderResponse:
             "items": [
                 {
                     "menu_item_id": 1,
-                    "menu_item_name": "Burger",
                     "quantity": 1,
                     "price_at_order_time": Decimal("9.99")
                 },
                 {
                     "menu_item_id": 2,
-                    "menu_item_name": "Pizza",
                     "quantity": 1,
                     "price_at_order_time": Decimal("12.99")
                 },
                 {
                     "menu_item_id": 3,
-                    "menu_item_name": "Soda",
                     "quantity": 2,
                     "price_at_order_time": Decimal("3.49")
                 }
@@ -260,7 +253,6 @@ class TestOrderResponse:
             "items": [
                 {
                     "menu_item_id": 1,
-                    "menu_item_name": "Snack",
                     "quantity": 1,
                     "price_at_order_time": Decimal("5.99")
                 }

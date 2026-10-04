@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.config import settings, validate_config
 from backend.database import init_db
-from backend.routes import auth
+from backend.routes import auth, menu, orders, admin
 import logging
 
 
@@ -73,6 +73,9 @@ app.add_middleware(
 
 # Register routers
 app.include_router(auth.router)
+app.include_router(menu.router)
+app.include_router(orders.router)
+app.include_router(admin.router)
 
 
 @app.get("/health")

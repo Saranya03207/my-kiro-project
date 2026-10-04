@@ -329,6 +329,7 @@ class TestMenuItemResponse:
             "price": Decimal("9.99"),
             "category": "Meals",
             "stock_quantity": 10,
+            "stock_threshold": 2,
             "is_available": True,
             "created_at": datetime(2024, 1, 1, 12, 0, 0),
             "updated_at": datetime(2024, 1, 2, 12, 0, 0)
@@ -337,6 +338,7 @@ class TestMenuItemResponse:
         assert response.id == 1
         assert response.name == "Burger"
         assert response.price == Decimal("9.99")
+        assert response.stock_threshold == 2
         assert response.is_available is True
         assert response.created_at == datetime(2024, 1, 1, 12, 0, 0)
         assert response.updated_at == datetime(2024, 1, 2, 12, 0, 0)
@@ -350,6 +352,7 @@ class TestMenuItemResponse:
             "price": Decimal("9.99"),
             "category": "Meals",
             "stock_quantity": 10,
+            "stock_threshold": 2,
             "is_available": True,
             "created_at": datetime(2024, 1, 1, 12, 0, 0),
             "updated_at": None

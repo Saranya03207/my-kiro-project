@@ -2,10 +2,10 @@
 Pydantic schemas for order validation.
 Handles request validation and response serialization for orders.
 """
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, Field, field_validator, ConfigDict, computed_field
 from decimal import Decimal
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Any
 
 
 class OrderItemCreate(BaseModel):
@@ -53,8 +53,9 @@ class OrderItemResponse(BaseModel):
     Returns order item details including the menu item name
     and the price at the time the order was placed.
     """
+    model_config = ConfigDict(from_attributes=True)
+    
     menu_item_id: int
-    menu_item_name: str
     quantity: int
     price_at_order_time: Decimal
 

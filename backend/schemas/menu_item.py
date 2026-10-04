@@ -107,6 +107,7 @@ class MenuItemResponse(BaseModel):
     price: Decimal
     category: str
     stock_quantity: int
+    stock_threshold: int
     is_available: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
