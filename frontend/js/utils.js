@@ -159,6 +159,9 @@ export function getFoodImage(item) {
   const cat = (item.category || '').toLowerCase();
 
   // Specific item matching
+  if (name.includes('biryani') || name.includes('briyani')) return 'assets/food/biryani.jpg';
+  if (name.includes('curd')) return 'assets/food/curd-rice.jpg';
+  if (name.includes('lemon')) return 'assets/food/lemon-rice.jpg';
   if (name.includes('cheeseburger') || name.includes('burger')) return 'assets/food/cheeseburger.jpg';
   if (name.includes('wrap') || name.includes('chicken')) return 'assets/food/chicken-wrap.jpg';
   if (name.includes('pizza')) return 'assets/food/pizza.jpg';
