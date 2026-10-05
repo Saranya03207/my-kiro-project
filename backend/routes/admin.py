@@ -2,11 +2,14 @@
 Admin routes for Smart Canteen Manager.
 Handles admin-only functionality: menu management, inventory, and analytics.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session as DBSession
 from typing import List, Dict, Any, Optional
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+import os
+import uuid
+import re
 from backend.database import get_db
 from backend.schemas.menu_item import MenuItemCreate, MenuItemUpdate, MenuItemResponse
 from backend.schemas.order import OrderResponse
@@ -22,6 +25,75 @@ router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
 
 # Menu Management Routes
+@router.post("/menu/upload-image", status_code=200)
+async def upload_food_image(
+    file: UploadFile = File(...),
+    session: Session = Depends(require_admin)
+) -> dict:
+    """
+    Upload a food image for a menu item (admin only).
+    Accepts PNG, JPEG, WebP up to 5MB.
+    Stores file under frontend/assets/food/.
+
+    Returns:
+        dict: {"image_url": "assets/food/<filename>"}
+    """
+    allowed_content_types = {"image/png", "image/jpeg", "image/webp"}
+    allowed_extensions = {".png", ".jpg", ".jpeg", ".webp"}
+
+    filename = file.filename or ""
+    ext = os.path.splitext(filename)[1].lower()
+
+    if file.content_type not in allowed_content_types or ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": {
+                    "code": "INVALID_IMAGE_TYPE",
+                    "message": "Invalid file type. Allowed formats: PNG, JPEG, WebP"
+                }
+            }
+        )
+
+    max_size = 5 * 1024 * 1024  # 5MB
+    content = await file.read()
+
+    if len(content) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": {
+                    "code": "EMPTY_FILE",
+                    "message": "Uploaded file is empty"
+                }
+            }
+        )
+
+    if len(content) > max_size:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": {
+                    "code": "FILE_TOO_LARGE",
+                    "message": "File size exceeds maximum limit of 5MB"
+                }
+            }
+        )
+
+    upload_dir = os.path.join("frontend", "assets", "food")
+    os.makedirs(upload_dir, exist_ok=True)
+
+    clean_base = re.sub(r'[^a-zA-Z0-9_-]', '_', os.path.splitext(filename)[0])[:30]
+    unique_filename = f"upload_{uuid.uuid4().hex[:8]}_{clean_base}{ext}"
+    dest_path = os.path.join(upload_dir, unique_filename)
+
+    with open(dest_path, "wb") as f:
+        f.write(content)
+
+    relative_url = f"assets/food/{unique_filename}"
+    return {"image_url": relative_url}
+
+
 @router.post("/menu/items", response_model=MenuItemResponse, status_code=201)
 def create_menu_item(
     item_data: MenuItemCreate,
@@ -30,15 +102,15 @@ def create_menu_item(
 ) -> MenuItemResponse:
     """
     Create a new menu item (admin only).
-    
+
     Args:
         item_data: Menu item creation data
         db: Database session
         session: Current admin session
-        
+
     Returns:
         Created menu item details
-        
+
     Raises:
         HTTPException: 400 if validation fails or name already exists
     """
@@ -76,23 +148,23 @@ def update_menu_item(
 ) -> MenuItemResponse:
     """
     Update an existing menu item (admin only).
-    
+
     Args:
         item_id: Menu item ID
         item_data: Menu item update data
         db: Database session
         session: Current admin session
-        
+
     Returns:
         Updated menu item details
-        
+
     Raises:
         HTTPException: 404 if item not found
         HTTPException: 400 if validation fails
     """
     try:
         item = MenuService.update_menu_item(db, item_id, item_data)
-        
+
         if not item:
             raise HTTPException(
                 status_code=404,
@@ -103,7 +175,7 @@ def update_menu_item(
                     }
                 }
             )
-        
+
         return item
     except HTTPException:
         raise
@@ -137,21 +209,21 @@ def toggle_menu_item_availability(
 ) -> MenuItemResponse:
     """
     Toggle menu item availability (admin only).
-    
+
     Args:
         item_id: Menu item ID
         db: Database session
         session: Current admin session
-        
+
     Returns:
         Updated menu item details
-        
+
     Raises:
         HTTPException: 404 if item not found
     """
     try:
         item = MenuService.toggle_availability(db, item_id)
-        
+
         if not item:
             raise HTTPException(
                 status_code=404,
@@ -162,7 +234,7 @@ def toggle_menu_item_availability(
                     }
                 }
             )
-        
+
         return item
     except HTTPException:
         raise
@@ -186,21 +258,21 @@ def delete_menu_item(
 ) -> None:
     """
     Soft delete a menu item (admin only).
-    
+
     Args:
         item_id: Menu item ID
         db: Database session
         session: Current admin session
-        
+
     Returns:
         No content (204)
-        
+
     Raises:
         HTTPException: 404 if item not found
     """
     try:
         success = MenuService.delete_menu_item(db, item_id)
-        
+
         if not success:
             raise HTTPException(
                 status_code=404,
@@ -233,11 +305,11 @@ def get_inventory(
 ) -> List[Dict[str, Any]]:
     """
     Get all inventory stock levels (admin only).
-    
+
     Args:
         db: Database session
         session: Current admin session
-        
+
     Returns:
         List of inventory items with stock information
     """
@@ -276,16 +348,16 @@ def update_stock_quantity(
 ) -> Dict[str, Any]:
     """
     Update stock quantity for a menu item (admin only).
-    
+
     Args:
         item_id: Menu item ID
         new_quantity: New stock quantity
         db: Database session
         session: Current admin session
-        
+
     Returns:
         Updated stock information
-        
+
     Raises:
         HTTPException: 404 if item not found
         HTTPException: 400 if quantity is negative
@@ -301,9 +373,9 @@ def update_stock_quantity(
                     }
                 }
             )
-        
+
         item = InventoryService.update_stock(db, item_id, quantity)
-        
+
         if not item:
             raise HTTPException(
                 status_code=404,
@@ -314,7 +386,7 @@ def update_stock_quantity(
                     }
                 }
             )
-        
+
         return {
             "id": item.id,
             "name": item.name,
@@ -344,11 +416,11 @@ def get_low_stock_items(
 ) -> List[Dict[str, Any]]:
     """
     Get items with low stock (admin only).
-    
+
     Args:
         db: Database session
         session: Current admin session
-        
+
     Returns:
         List of items below their stock threshold
     """
@@ -386,16 +458,16 @@ def update_stock_threshold(
 ) -> Dict[str, Any]:
     """
     Update stock threshold for a menu item (admin only).
-    
+
     Args:
         item_id: Menu item ID
         new_threshold: New stock threshold
         db: Database session
         session: Current admin session
-        
+
     Returns:
         Updated threshold information
-        
+
     Raises:
         HTTPException: 404 if item not found
         HTTPException: 400 if threshold is negative
@@ -411,9 +483,9 @@ def update_stock_threshold(
                     }
                 }
             )
-        
+
         item = InventoryService.update_stock_threshold(db, item_id, threshold)
-        
+
         if not item:
             raise HTTPException(
                 status_code=404,
@@ -424,7 +496,7 @@ def update_stock_threshold(
                     }
                 }
             )
-        
+
         return {
             "id": item.id,
             "name": item.name,
@@ -456,12 +528,12 @@ def get_all_orders(
 ) -> List[OrderResponse]:
     """
     Get all orders with optional filtering (admin only).
-    
+
     Args:
         status: Optional status filter
         db: Database session
         session: Current admin session
-        
+
     Returns:
         List of all orders matching filters
     """
@@ -492,16 +564,16 @@ def update_order_status(
 ) -> OrderResponse:
     """
     Update order status (admin only).
-    
+
     Args:
         order_id: Order ID
         new_status: New order status
         db: Database session
         session: Current admin session
-        
+
     Returns:
         Updated order details
-        
+
     Raises:
         HTTPException: 404 if order not found
         HTTPException: 400 if invalid status transition
@@ -519,9 +591,9 @@ def update_order_status(
                     }
                 }
             )
-        
+
         order = OrderService.update_order_status(db, order_id, new_status)
-        
+
         if not order:
             raise HTTPException(
                 status_code=404,
@@ -532,7 +604,7 @@ def update_order_status(
                     }
                 }
             )
-        
+
         return order
     except HTTPException:
         raise
@@ -567,12 +639,12 @@ def get_daily_sales(
 ) -> Dict[str, Any]:
     """
     Get daily sales statistics (admin only).
-    
+
     Args:
         target_date: Date to get sales for (defaults to today)
         db: Database session
         session: Current admin session
-        
+
     Returns:
         Daily sales statistics
     """
@@ -600,16 +672,16 @@ def get_sales_by_date_range(
 ) -> List[Dict[str, Any]]:
     """
     Get sales statistics for a date range (admin only).
-    
+
     Args:
         start_date: Start date (inclusive)
         end_date: End date (inclusive)
         db: Database session
         session: Current admin session
-        
+
     Returns:
         List of daily sales statistics for the date range
-        
+
     Raises:
         HTTPException: 400 if date range is invalid
     """
@@ -624,7 +696,7 @@ def get_sales_by_date_range(
                     }
                 }
             )
-        
+
         # Limit range to 90 days to prevent excessive queries
         if (end_date - start_date).days > 90:
             raise HTTPException(
@@ -636,7 +708,7 @@ def get_sales_by_date_range(
                     }
                 }
             )
-        
+
         sales_data = AnalyticsService.get_sales_by_date_range(db, start_date, end_date)
         return sales_data
     except HTTPException:
@@ -662,13 +734,13 @@ def get_popular_items(
 ) -> List[Dict[str, Any]]:
     """
     Get most popular menu items (admin only).
-    
+
     Args:
         days: Number of days to look back (1-90)
         limit: Maximum number of items to return (1-50)
         db: Database session
         session: Current admin session
-        
+
     Returns:
         List of popular items with popularity scores
     """

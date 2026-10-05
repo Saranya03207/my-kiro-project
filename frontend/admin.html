@@ -330,6 +330,29 @@
               <input type="number" id="menuItemThreshold" class="form-input" value="3" min="0" required>
             </div>
           </div>
+
+          <div class="form-group">
+            <label class="form-label" for="menuItemImageFile">Food Image <span class="text-muted">(Optional)</span></label>
+            <input type="file" id="menuItemImageFile" accept="image/png, image/jpeg, image/webp" style="display: none;">
+            <input type="hidden" id="menuItemImageUrl" value="">
+
+            <div id="imageUploadDropzone" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1.5px dashed var(--border-color); border-radius: var(--radius-sm); background: var(--bg-surface-secondary, #fafafa); cursor: pointer;">
+              <button type="button" class="btn btn-sm btn-secondary" id="btnChooseImage">Choose Image</button>
+              <span class="text-muted" id="imageUploadHint" style="font-size: var(--font-size-xs);">PNG, JPEG, or WebP up to 5MB</span>
+            </div>
+
+            <div id="imagePreviewContainer" class="hidden" style="margin-top: 8px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-surface-secondary, #fafafa);">
+              <img id="imagePreviewThumb" src="" alt="Food Preview" style="width: 56px; height: 56px; object-fit: cover; border-radius: var(--radius-xs); border: 1px solid var(--border-color);">
+              <div style="flex: 1; min-width: 0;">
+                <div id="imagePreviewName" style="font-size: var(--font-size-sm); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary);"></div>
+                <div id="imagePreviewStatus" class="text-muted" style="font-size: var(--font-size-xs);">Ready to save</div>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <button type="button" class="btn btn-sm btn-secondary" id="btnChangeImage">Change</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemoveImage">Remove</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer">
@@ -468,6 +491,25 @@
         adminManager.openAddModal();
       });
 
+      // Food Image Upload Event Handlers
+      const fileInput = document.getElementById('menuItemImageFile');
+      document.getElementById('btnChooseImage')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput?.click();
+      });
+      document.getElementById('imageUploadDropzone')?.addEventListener('click', (e) => {
+        if (e.target.id !== 'btnChooseImage') fileInput?.click();
+      });
+      document.getElementById('btnChangeImage')?.addEventListener('click', () => fileInput?.click());
+      document.getElementById('btnRemoveImage')?.addEventListener('click', () => {
+        adminManager.handleRemoveImage();
+      });
+      fileInput?.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          adminManager.handleImageSelected(e.target.files[0]);
+        }
+      });
+
       // Menu Item Form Submit
       document.getElementById('menuItemForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -478,14 +520,22 @@
           price: document.getElementById('menuItemPrice').value,
           description: document.getElementById('menuItemDesc').value,
           stock_quantity: document.getElementById('menuItemStock').value,
-          stock_threshold: document.getElementById('menuItemThreshold').value
+          stock_threshold: document.getElementById('menuItemThreshold').value,
+          image_url: document.getElementById('menuItemImageUrl').value || null,
+          image_removed: adminManager.imageRemoved || false
         };
         await adminManager.saveMenuItem(formData);
       });
 
       // Modal Close Buttons
-      document.getElementById('closeMenuItemModal')?.addEventListener('click', () => hideModal('menuItemModal'));
-      document.getElementById('cancelMenuItemModal')?.addEventListener('click', () => hideModal('menuItemModal'));
+      document.getElementById('closeMenuItemModal')?.addEventListener('click', () => {
+        hideModal('menuItemModal');
+        adminManager.resetImageUploadUI();
+      });
+      document.getElementById('cancelMenuItemModal')?.addEventListener('click', () => {
+        hideModal('menuItemModal');
+        adminManager.resetImageUploadUI();
+      });
 
       document.getElementById('closeDeleteModal')?.addEventListener('click', () => hideModal('confirmDeleteModal'));
       document.getElementById('cancelDeleteBtn')?.addEventListener('click', () => hideModal('confirmDeleteModal'));

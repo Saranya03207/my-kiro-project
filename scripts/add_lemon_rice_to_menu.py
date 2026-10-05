@@ -55,6 +55,7 @@ def add_lemon_rice_to_menu():
             category="Meals",
             stock_quantity=20,
             stock_threshold=5,
+            image_url="assets/food/lemon-rice.jpg",
             is_available=True,
             is_deleted=False
         )

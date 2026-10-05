@@ -71,11 +71,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import os
+from fastapi.staticfiles import StaticFiles
+
 # Register routers
 app.include_router(auth.router)
 app.include_router(menu.router)
 app.include_router(orders.router)
 app.include_router(admin.router)
+
+# Mount static assets if directory exists
+if os.path.exists("frontend/assets"):
+    app.mount("/assets", StaticFiles(directory="frontend/assets"), name="assets")
 
 
 @app.get("/health")

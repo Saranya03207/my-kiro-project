@@ -55,6 +55,7 @@ def add_curd_rice_to_menu():
             category="Meals",
             stock_quantity=20,
             stock_threshold=5,
+            image_url="assets/food/curd-rice.jpg",
             is_available=True,
             is_deleted=False
         )

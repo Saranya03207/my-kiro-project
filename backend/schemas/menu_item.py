@@ -26,6 +26,7 @@ class MenuItemCreate(BaseModel):
     category: str = Field(..., min_length=1, max_length=50)
     stock_quantity: int = Field(..., ge=0)
     stock_threshold: int = Field(default=5, ge=0)
+    image_url: Optional[str] = Field(None, max_length=500)
     
     @field_validator('name', 'category')
     @classmethod
@@ -66,6 +67,7 @@ class MenuItemUpdate(BaseModel):
     stock_quantity: Optional[int] = Field(None, ge=0)
     stock_threshold: Optional[int] = Field(None, ge=0)
     is_available: Optional[bool] = None
+    image_url: Optional[str] = Field(None, max_length=500)
     
     @field_validator('name', 'category')
     @classmethod
@@ -109,5 +111,6 @@ class MenuItemResponse(BaseModel):
     stock_quantity: int
     stock_threshold: int
     is_available: bool
+    image_url: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None

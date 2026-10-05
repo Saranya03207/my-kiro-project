@@ -40,18 +40,23 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  getAuthHeaders() {
+  getAuthHeaders(isFormData = false) {
     const token = sessionStorage.getItem('canteen_session_token');
-    return {
-      'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-    };
+    const headers = {};
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
   }
 
   async request(endpoint, options = {}) {
     const url = `${this.baseUrl}${endpoint}`;
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
     const headers = {
-      ...this.getAuthHeaders(),
+      ...this.getAuthHeaders(isFormData),
       ...(options.headers || {})
     };
 
@@ -158,6 +163,15 @@ class ApiClient {
   }
 
   // --- Admin Menu ---
+  async uploadFoodImage(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.request('/admin/menu/upload-image', {
+      method: 'POST',
+      body: formData
+    });
+  }
+
   async createMenuItem(itemData) {
     return this.request('/admin/menu/items', {
       method: 'POST',

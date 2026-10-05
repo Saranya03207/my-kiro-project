@@ -30,11 +30,11 @@ Base = declarative_base()
 def get_db() -> Session:
     """
     Get database session.
-    
+
     Usage in FastAPI route:
         def my_route(db: Session = Depends(get_db)):
             ...
-    
+
     Yields:
         Database session
     """
@@ -52,6 +52,15 @@ def init_db():
     """
     # Import all models to ensure they are registered with Base
     from backend.models import menu_item, order, order_item, session
-    
+
     # Create all tables
     Base.metadata.create_all(bind=engine)
+
+    # Ensure image_url column exists in menu_items if table already existed
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE menu_items ADD COLUMN image_url VARCHAR(500)"))
+            conn.commit()
+    except Exception:
+        pass

@@ -35,5 +35,6 @@ class MenuItem(Base):
     stock_threshold = Column(Integer, nullable=False, default=5)
     is_available = Column(Boolean, default=True, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
+    image_url = Column(String(500), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

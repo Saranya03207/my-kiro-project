@@ -4,14 +4,14 @@
  */
 
 import apiClient from './api.js';
-import { 
-  formatPrice, 
-  formatDateTime, 
-  getStatusBadge, 
-  escapeHtml, 
-  getFoodImage, 
-  showToast, 
-  showModal, 
+import {
+  formatPrice,
+  formatDateTime,
+  getStatusBadge,
+  escapeHtml,
+  getFoodImage,
+  showToast,
+  showModal,
   hideModal,
   getSvgIcon
 } from './utils.js';
@@ -238,6 +238,100 @@ export class AdminManager {
     }
   }
 
+  resetImageUploadUI() {
+    this.imageRemoved = false;
+    const fileInput = document.getElementById('menuItemImageFile');
+    const urlInput = document.getElementById('menuItemImageUrl');
+    const dropzone = document.getElementById('imageUploadDropzone');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const previewThumb = document.getElementById('imagePreviewThumb');
+    const previewName = document.getElementById('imagePreviewName');
+    const previewStatus = document.getElementById('imagePreviewStatus');
+
+    if (fileInput) fileInput.value = '';
+    if (urlInput) urlInput.value = '';
+    if (previewThumb) previewThumb.src = '';
+    if (previewName) previewName.textContent = '';
+    if (previewStatus) previewStatus.textContent = '';
+    if (previewContainer) previewContainer.classList.add('hidden');
+    if (dropzone) dropzone.classList.remove('hidden');
+  }
+
+  setImageUploadUIForEdit(item) {
+    this.imageRemoved = false;
+    const fileInput = document.getElementById('menuItemImageFile');
+    const urlInput = document.getElementById('menuItemImageUrl');
+    const dropzone = document.getElementById('imageUploadDropzone');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const previewThumb = document.getElementById('imagePreviewThumb');
+    const previewName = document.getElementById('imagePreviewName');
+    const previewStatus = document.getElementById('imagePreviewStatus');
+
+    if (fileInput) fileInput.value = '';
+    const existingImg = item.image_url || getFoodImage(item);
+    if (urlInput) urlInput.value = item.image_url || '';
+
+    if (existingImg) {
+      if (previewThumb) previewThumb.src = existingImg;
+      if (previewName) {
+        previewName.textContent = item.image_url ? item.image_url.split('/').pop() : `${item.name} (standard photo)`;
+      }
+      if (previewStatus) {
+        previewStatus.textContent = item.image_url ? 'Current saved image' : 'Default fallback image';
+      }
+      if (previewContainer) previewContainer.classList.remove('hidden');
+      if (dropzone) dropzone.classList.add('hidden');
+    } else {
+      this.resetImageUploadUI();
+    }
+  }
+
+  handleImageSelected(file) {
+    if (!file) return;
+
+    const validTypes = ['image/png', 'image/jpeg', 'image/webp'];
+    const validExts = ['.png', '.jpg', '.jpeg', '.webp'];
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+
+    if (!validTypes.includes(file.type) && !validExts.includes(ext)) {
+      showToast('Invalid image type. Please select a PNG, JPEG, or WebP image.', 'error');
+      const fileInput = document.getElementById('menuItemImageFile');
+      if (fileInput) fileInput.value = '';
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      showToast('Image file too large. Maximum size is 5MB.', 'error');
+      const fileInput = document.getElementById('menuItemImageFile');
+      if (fileInput) fileInput.value = '';
+      return;
+    }
+
+    this.imageRemoved = false;
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const dropzone = document.getElementById('imageUploadDropzone');
+    const previewThumb = document.getElementById('imagePreviewThumb');
+    const previewName = document.getElementById('imagePreviewName');
+    const previewStatus = document.getElementById('imagePreviewStatus');
+
+    const objectUrl = URL.createObjectURL(file);
+    if (previewThumb) previewThumb.src = objectUrl;
+    if (previewName) previewName.textContent = file.name;
+    if (previewStatus) previewStatus.textContent = `${(file.size / 1024).toFixed(0)} KB - Selected photo`;
+    if (previewContainer) previewContainer.classList.remove('hidden');
+    if (dropzone) dropzone.classList.add('hidden');
+  }
+
+  handleRemoveImage() {
+    this.imageRemoved = true;
+    this.resetImageUploadUI();
+    this.imageRemoved = true; // Keep flag set after reset
+    const urlInput = document.getElementById('menuItemImageUrl');
+    if (urlInput) urlInput.value = '';
+    showToast('Image removed (will use default fallback)', 'info');
+  }
+
   openAddModal() {
     this.itemToEdit = null;
     const title = document.getElementById('menuItemModalTitle');
@@ -245,6 +339,7 @@ export class AdminManager {
     if (title) title.textContent = 'Add New Food Item';
     if (form) form.reset();
     document.getElementById('menuItemId').value = '';
+    this.resetImageUploadUI();
     showModal('menuItemModal');
   }
 
@@ -266,6 +361,8 @@ export class AdminManager {
       document.getElementById('menuItemStock').value = fullItem.stock_quantity;
       document.getElementById('menuItemThreshold').value = fullItem.stock_threshold || 5;
 
+      this.setImageUploadUIForEdit(fullItem);
+
       showModal('menuItemModal');
     } catch (err) {
       showToast('Could not load item details for edit', 'error');
@@ -275,17 +372,40 @@ export class AdminManager {
   async saveMenuItem(formData) {
     const id = formData.id;
     const isEdit = !!id;
-
-    const payload = {
-      name: formData.name.trim(),
-      category: formData.category.trim(),
-      price: parseFloat(formData.price),
-      description: formData.description.trim() || 'Freshly prepared item',
-      stock_quantity: parseInt(formData.stock_quantity, 10),
-      stock_threshold: parseInt(formData.stock_threshold, 10) || 5
-    };
+    const saveBtn = document.getElementById('saveMenuItemBtn');
 
     try {
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+      }
+
+      let imageUrl = formData.image_url;
+      const fileInput = document.getElementById('menuItemImageFile');
+
+      // If a new file is selected, upload it first
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        const uploadRes = await apiClient.uploadFoodImage(fileInput.files[0]);
+        if (uploadRes && uploadRes.image_url) {
+          imageUrl = uploadRes.image_url;
+        }
+      }
+
+      const payload = {
+        name: formData.name.trim(),
+        category: formData.category.trim(),
+        price: parseFloat(formData.price),
+        description: formData.description.trim() || 'Freshly prepared item',
+        stock_quantity: parseInt(formData.stock_quantity, 10),
+        stock_threshold: parseInt(formData.stock_threshold, 10) || 5
+      };
+
+      if (imageUrl) {
+        payload.image_url = imageUrl;
+      } else if (this.imageRemoved) {
+        payload.image_url = "";
+      }
+
       if (isEdit) {
         await apiClient.updateMenuItem(id, payload);
         showToast('Menu item updated successfully!', 'success');
@@ -294,11 +414,17 @@ export class AdminManager {
         showToast('New menu item created!', 'success');
       }
       hideModal('menuItemModal');
+      this.resetImageUploadUI();
       await this.loadMenuManagement();
       await this.loadDashboardData();
     } catch (err) {
       console.error('Save failed:', err);
       showToast(err.message || 'Failed to save menu item', 'error');
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Food Item';
+      }
     }
   }
 
@@ -496,7 +622,7 @@ export class AdminManager {
 
     container.innerHTML = this.orders.map(order => {
       const status = (order.status || '').toLowerCase();
-      
+
       let actionButtons = '';
       if (status === 'pending') {
         actionButtons = `

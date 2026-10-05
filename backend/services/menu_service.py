@@ -133,6 +133,7 @@ class MenuService:
             category=item_data.category,
             stock_quantity=item_data.stock_quantity,
             stock_threshold=item_data.stock_threshold,
+            image_url=item_data.image_url,
             is_available=True,
             is_deleted=False
         )
@@ -188,6 +189,8 @@ class MenuService:
         # Update only provided fields
         update_dict = item_data.model_dump(exclude_unset=True)
         for field, value in update_dict.items():
+            if field == "image_url" and value == "":
+                value = None
             setattr(menu_item, field, value)
         
         try:

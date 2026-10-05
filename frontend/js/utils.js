@@ -155,6 +155,12 @@ export function getStatusBadge(status) {
  */
 export function getFoodImage(item) {
   if (!item) return 'assets/food/default-food.jpg';
+
+  // Use custom uploaded image if available
+  if (item.image_url && typeof item.image_url === 'string' && item.image_url.trim()) {
+    return item.image_url.trim();
+  }
+
   const name = (item.name || '').toLowerCase();
   const cat = (item.category || '').toLowerCase();
 

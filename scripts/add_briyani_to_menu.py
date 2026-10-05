@@ -51,6 +51,7 @@ def add_briyani_to_menu():
             category="Meals", 
             stock_quantity=20,
             stock_threshold=5,
+            image_url="assets/food/biryani.jpg",
             is_available=True,
             is_deleted=False
         )
