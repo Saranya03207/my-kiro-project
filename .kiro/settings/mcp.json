@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "smart-canteen": {
+      "command": "python",
+      "args": ["-m", "mcp_server.server"],
+      "cwd": ".",
+      "env": {},
+      "disabled": false,
+      "autoApprove": [
+        "get_available_menu_items",
+        "get_low_stock_items",
+        "get_order_status",
+        "get_order_history"
+      ]
+    }
+  }
+}

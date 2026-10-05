@@ -1,0 +1,23 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "smart-canteen-dev",
+  "version": "1.0.0",
+  "description": "Provide reusable domain-specific development guidance and MCP tools for the Smart Canteen Booking System project",
+  "author": {
+    "name": "Saranya03207"
+  },
+  "keywords": [
+    "smart canteen",
+    "fastapi",
+    "sqlalchemy",
+    "sqlite",
+    "pytest",
+    "hypothesis",
+    "property testing",
+    "student portal",
+    "admin portal",
+    "inventory",
+    "orders",
+    "mcp"
+  ]
+}
