@@ -101,6 +101,17 @@ export class MenuManager {
     this.attachCardEventListeners(featuredGrid);
   }
 
+  resetFilters() {
+    this.searchTerm = '';
+    this.currentCategory = 'All';
+    const searchInput = document.getElementById('menuSearchInput');
+    const searchClearBtn = document.getElementById('btnMenuSearchClear');
+    if (searchInput) searchInput.value = '';
+    if (searchClearBtn) searchClearBtn.classList.add('hidden');
+    this.renderCategoryChips();
+    this.loadMenu();
+  }
+
   renderMenuGrid() {
     const grid = document.getElementById('foodGrid');
     const emptyState = document.getElementById('menuEmptyState');
@@ -108,7 +119,26 @@ export class MenuManager {
 
     if (this.items.length === 0) {
       grid.innerHTML = '';
-      if (emptyState) emptyState.classList.remove('hidden');
+      if (emptyState) {
+        emptyState.classList.remove('hidden');
+        const descEl = document.getElementById('menuEmptyStateDesc');
+        if (descEl) {
+          if (this.searchTerm && this.currentCategory !== 'All') {
+            descEl.textContent = `No dishes found matching "${this.searchTerm}" in "${this.currentCategory}". Try clearing your filters.`;
+          } else if (this.searchTerm) {
+            descEl.textContent = `No dishes found matching "${this.searchTerm}". Check your spelling or try another dish.`;
+          } else if (this.currentCategory !== 'All') {
+            descEl.textContent = `No food items are currently available in "${this.currentCategory}".`;
+          } else {
+            descEl.textContent = 'No food items are currently available on the canteen menu.';
+          }
+        }
+        const resetBtn = document.getElementById('btnResetMenuFilters');
+        if (resetBtn && !resetBtn._hasListener) {
+          resetBtn._hasListener = true;
+          resetBtn.addEventListener('click', () => this.resetFilters());
+        }
+      }
       return;
     }
 
