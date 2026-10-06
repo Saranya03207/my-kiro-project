@@ -15,6 +15,7 @@ import {
   hideModal,
   getSvgIcon
 } from './utils.js';
+import { playNewOrderSound } from './audio.js';
 
 export class AdminManager {
   constructor() {
@@ -27,14 +28,20 @@ export class AdminManager {
     this.activeTab = 'dashboard';
     this.ordersFilter = 'all';
     this.inventoryFilter = 'all';
+    this.knownOrderIds = new Set();
+    this.isInitialLoad = true;
+    this.pollTimer = null;
+    this.pollInterval = 5000;
   }
 
   async init() {
     await this.loadDashboardData();
+    this.startPolling();
   }
 
   // --- DASHBOARD TAB ---
   async loadDashboardData() {
+    this.activeTab = 'dashboard';
     try {
       const [dailySales, lowStock, orders, popular] = await Promise.all([
         apiClient.getDailySales().catch(() => null),
@@ -44,6 +51,7 @@ export class AdminManager {
       ]);
 
       this.orders = orders || [];
+      this.detectNewOrders(this.orders);
       const pendingCount = this.orders.filter(o => o.status === 'pending').length;
 
       // Stats Cards
@@ -156,6 +164,7 @@ export class AdminManager {
 
   // --- MENU MANAGEMENT TAB ---
   async loadMenuManagement() {
+    this.activeTab = 'menuMgmt';
     const tbody = document.getElementById('adminMenuTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="loading-block"><span class="spinner"></span> Loading menu items...</td></tr>`;
 
@@ -453,6 +462,7 @@ export class AdminManager {
 
   // --- INVENTORY TAB ---
   async loadInventory() {
+    this.activeTab = 'inventory';
     const tbody = document.getElementById('inventoryTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="loading-block"><span class="spinner"></span> Loading inventory...</td></tr>`;
 
@@ -592,6 +602,7 @@ export class AdminManager {
 
   // --- ORDERS TAB (Kitchen Workflow) ---
   async loadOrders() {
+    this.activeTab = 'ordersMgmt';
     const container = document.getElementById('adminOrdersList');
     if (container) container.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading orders...</div>`;
 
@@ -604,6 +615,7 @@ export class AdminManager {
 
       const orders = await apiClient.getAllOrders(this.ordersFilter === 'all' ? null : this.ordersFilter);
       this.orders = orders || [];
+      this.detectNewOrders(this.orders);
       this.renderOrdersList();
     } catch (err) {
       console.error('Failed to load admin orders:', err);
@@ -611,16 +623,17 @@ export class AdminManager {
     }
   }
 
-  renderOrdersList() {
+  renderOrdersList(ordersToRender = null) {
     const container = document.getElementById('adminOrdersList');
     if (!container) return;
 
-    if (this.orders.length === 0) {
+    const list = ordersToRender || this.orders;
+    if (list.length === 0) {
       container.innerHTML = `<div class="empty-state"><span class="empty-state-icon" style="color: var(--text-muted);">${getSvgIcon('receipt', 48)}</span><h3 class="empty-state-title">No orders found</h3><p class="empty-state-desc">There are no kitchen orders matching the selected filter.</p></div>`;
       return;
     }
 
-    container.innerHTML = this.orders.map(order => {
+    container.innerHTML = list.map(order => {
       const status = (order.status || '').toLowerCase();
 
       let actionButtons = '';
@@ -698,6 +711,109 @@ export class AdminManager {
       await this.loadDashboardData();
     } catch (err) {
       showToast(err.message || 'Failed to update order status', 'error');
+    }
+  }
+
+  /**
+   * Detects genuinely new student orders and triggers the sound alert.
+   * - On initial page load: populates known order IDs without triggering sound
+   * - On subsequent polling: detects new order IDs, adds them to the Set, and plays sound once
+   * - Status transitions or existing orders never re-trigger the sound
+   * - Multiple new orders in a single cycle trigger sound exactly once
+   * @param {Array} orders - List of order objects
+   */
+  detectNewOrders(orders) {
+    if (!Array.isArray(orders) || orders.length === 0) {
+      if (this.isInitialLoad) {
+        this.isInitialLoad = false;
+      }
+      return;
+    }
+
+    if (this.isInitialLoad) {
+      orders.forEach(o => {
+        if (o && o.id !== undefined) {
+          this.knownOrderIds.add(o.id);
+        }
+      });
+      this.isInitialLoad = false;
+      return;
+    }
+
+    const newOrders = [];
+    for (const o of orders) {
+      if (o && o.id !== undefined && !this.knownOrderIds.has(o.id)) {
+        this.knownOrderIds.add(o.id);
+        newOrders.push(o);
+      }
+    }
+
+    if (newOrders.length > 0) {
+      // Play audio notification chime once per polling cycle
+      playNewOrderSound();
+
+      // Notification toast
+      if (newOrders.length === 1) {
+        showToast(`New order #${newOrders[0].id} received (${formatPrice(newOrders[0].total_price)})`, 'info');
+      } else {
+        showToast(`${newOrders.length} new orders received!`, 'info');
+      }
+    }
+  }
+
+  /**
+   * Start polling for incoming student orders
+   */
+  startPolling() {
+    if (this.pollTimer) return;
+    this.pollTimer = setInterval(() => {
+      this.silentRefresh();
+    }, this.pollInterval);
+  }
+
+  /**
+   * Stop polling
+   */
+  stopPolling() {
+    if (this.pollTimer) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = null;
+    }
+  }
+
+  /**
+   * Silent background poll for order updates and new orders
+   */
+  async silentRefresh() {
+    try {
+      const orders = await apiClient.getAllOrders().catch(() => null);
+      if (!orders || !Array.isArray(orders)) return;
+
+      this.detectNewOrders(orders);
+      this.orders = orders;
+
+      // Update Dashboard view if currently active
+      if (this.activeTab === 'dashboard') {
+        const pendingCount = this.orders.filter(o => o.status === 'pending').length;
+        const pendingOrdersEl = document.getElementById('statPendingOrders');
+        if (pendingOrdersEl) pendingOrdersEl.textContent = pendingCount;
+        this.renderRecentOrders(this.orders.slice(0, 5));
+      } else if (this.activeTab === 'ordersMgmt') {
+        // Ensure menuMap is available for item name rendering
+        if (Object.keys(this.menuMap).length === 0) {
+          const inv = await apiClient.getInventory().catch(() => []);
+          (inv || []).forEach(i => { this.menuMap[i.id] = i.name; });
+        }
+
+        // Update Kitchen Orders view if currently active
+        let filteredOrders = this.orders;
+        if (this.ordersFilter && this.ordersFilter !== 'all') {
+          filteredOrders = this.orders.filter(o => o.status === this.ordersFilter);
+        }
+        this.renderOrdersList(filteredOrders);
+      }
+    } catch {
+      // Silent error during background poll
     }
   }
 }

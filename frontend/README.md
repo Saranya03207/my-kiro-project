@@ -29,7 +29,10 @@ The frontend for the **Smart Canteen Booking System** is built with **Vanilla HT
   - Monitor stock levels in real time.
   - Visual warning badges for items at or below low-stock thresholds.
   - Quick-restock dialog and threshold adjustments.
-- **Live Order Queue**:
+- **Live Order Queue & Audio Alerts**:
+  - Background order polling (5s interval) detecting genuinely new student orders with ID tracking.
+  - Incoming order audio chime notification (`new-order.wav`) with resilient Web Audio API fallback.
+  - Accessible Sound On/Off control in header synced with `localStorage` (`canteen_sound_notifications`).
   - Filter orders by status (`All`, `Pending`, `Preparing`, `Ready`, `Completed`, `Cancelled`).
   - One-click order state transitions.
 - **Sales Analytics Dashboard**:
@@ -44,15 +47,16 @@ The frontend for the **Smart Canteen Booking System** is built with **Vanilla HT
 frontend/
 ├── assets/
 │   ├── food/              # Food imagery (biryani, curd-rice, lemon-rice, default fallbacks, uploaded files)
-│   └── sounds/            # Sound notification assets (order-ready.wav, order-confirmed.wav)
+│   └── sounds/            # Sound notification assets (order-ready.wav, order-confirmed.wav, new-order.wav)
 ├── css/
 │   ├── base.css           # Global typography, color variables, resets
 │   ├── components.css     # Buttons, cards, badges, inputs, modals
 │   ├── layout.css         # Page shells, grids, and flex containers
 │   └── responsive.css     # Mobile, tablet, and desktop breakpoints
 ├── js/
-│   ├── admin.js           # Admin UI interactions, menu CRUD, image upload preview & state
+│   ├── admin.js           # Admin UI interactions, menu CRUD, image upload, new order polling & sound alert
 │   ├── api.js             # Centralized ApiClient supporting JSON & multipart/form-data
+│   ├── audio.js           # Audio notification manager (order-ready, order-confirmed, new-order, Web Audio fallback)
 │   ├── auth.js            # Authentication state and route protection
 │   ├── cart.js            # Shopping cart management and stock validation
 │   ├── menu.js            # Menu card rendering and category filtering

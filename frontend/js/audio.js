@@ -7,6 +7,7 @@
 const STORAGE_KEY = 'canteen_sound_notifications';
 const AUDIO_ASSET_PATH = 'assets/sounds/order-ready.wav';
 const ORDER_CONFIRMED_ASSET_PATH = 'assets/sounds/order-confirmed.wav';
+const NEW_ORDER_ASSET_PATH = 'assets/sounds/new-order.wav';
 
 export class AudioManager {
   constructor() {
@@ -14,6 +15,7 @@ export class AudioManager {
     this.isUnlocked = false;
     this.audioElement = null;
     this.orderConfirmedAudioElement = null;
+    this.newOrderAudioElement = null;
     this.initAudioUnlock();
   }
 
@@ -262,6 +264,90 @@ export class AudioManager {
   }
 
   /**
+   * Synthesize an alert chime via Web Audio API for incoming admin orders
+   * Used as a resilient fallback if HTML5 Audio fails or file is blocked
+   */
+  synthesizeNewOrderChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+
+      if (!this.audioContext) {
+        this.audioContext = new AudioCtx();
+      }
+
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume().catch(() => {});
+      }
+
+      const ctx = this.audioContext;
+      const now = ctx.currentTime;
+
+      // Strike 1: F5 (698.46 Hz) + C6 (1046.50 Hz)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(698.46, now);
+      gain1.gain.setValueAtTime(0.001, now);
+      gain1.gain.exponentialRampToValueAtTime(0.35, now + 0.01);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.23);
+
+      // Strike 2: A5 (880.00 Hz) + E6 (1318.51 Hz) at +0.16s with longer ring
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(880.00, now + 0.16);
+      gain2.gain.setValueAtTime(0.001, now + 0.16);
+      gain2.gain.exponentialRampToValueAtTime(0.40, now + 0.17);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.16);
+      osc2.stop(now + 0.66);
+
+    } catch (err) {
+      console.warn('Web Audio synthesis fallback error for new order alert:', err);
+    }
+  }
+
+  /**
+   * Play the admin new-order sound notification
+   * Safe, non-blocking, and gracefully handles autoplay restrictions
+   */
+  async playNewOrderSound() {
+    if (!this.isSoundEnabled()) {
+      return;
+    }
+
+    try {
+      if (!this.newOrderAudioElement) {
+        this.newOrderAudioElement = new Audio(NEW_ORDER_ASSET_PATH);
+        this.newOrderAudioElement.volume = 0.6;
+        this.newOrderAudioElement.preload = 'auto';
+      }
+
+      this.newOrderAudioElement.currentTime = 0;
+      const playPromise = this.newOrderAudioElement.play();
+
+      if (playPromise !== undefined) {
+        await playPromise.catch((err) => {
+          if (err && err.name === 'NotAllowedError') {
+            this.synthesizeNewOrderChime();
+          } else {
+            this.synthesizeNewOrderChime();
+          }
+        });
+      }
+    } catch {
+      this.synthesizeNewOrderChime();
+    }
+  }
+
+  /**
    * Update all registered sound toggle buttons on the page
    */
   notifyToggleButtons() {
@@ -308,6 +394,10 @@ export function playOrderReadySound() {
 
 export function playOrderConfirmedSound() {
   return audioManager.playOrderConfirmedSound();
+}
+
+export function playNewOrderSound() {
+  return audioManager.playNewOrderSound();
 }
 
 export function isSoundEnabled() {

@@ -88,8 +88,10 @@ flowchart TD
   - Live inventory monitoring with low-stock badges.
   - Configurable alert thresholds (`stock_quantity <= stock_threshold`).
   - Restock action triggers with automatic status updates.
-- **Live Order Management**:
+- **Live Order Management & Audio Alerts**:
   - Filterable order queue (`All`, `Pending`, `Preparing`, `Ready`, `Completed`, `Cancelled`).
+  - Real-time incoming order detection via 5-second polling with dedicated attention chime (`new-order.wav`) and Web Audio API fallback.
+  - Header Sound Toggle (Sound On/Off) with persistent state.
   - Status progression workflow with one-click transitions and validation.
 - **Sales Analytics Dashboard**:
   - Daily revenue, total orders, and average order value.

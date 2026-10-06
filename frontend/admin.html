@@ -23,6 +23,11 @@
       </div>
 
       <div class="header-actions">
+        <!-- Sound Notification Toggle (SVG Icon, No Emoji) -->
+        <button type="button" class="btn btn-secondary btn-sm sound-toggle-btn" id="btnSoundToggle" aria-label="Toggle sound notifications" title="Toggle sound notifications">
+          <!-- Populated dynamically with SVG icon and text -->
+        </button>
+
         <div class="user-profile">
           <div class="user-avatar" style="background: #fef3c7; color: #92400e;">A</div>
           <div class="user-details">
@@ -438,6 +443,7 @@
     import AuthService from './js/auth.js';
     import adminManager from './js/admin.js';
     import { hideModal } from './js/utils.js';
+    import { updateSoundToggleUI, toggleSound } from './js/audio.js';
 
     document.addEventListener('DOMContentLoaded', async () => {
       // Role Guard - Must be admin
@@ -450,6 +456,16 @@
       if (greetingEl) greetingEl.textContent = adminId;
       const avatarEl = document.querySelector('.user-avatar');
       if (avatarEl && adminId) avatarEl.textContent = adminId.charAt(0).toUpperCase();
+
+      // Initialize Sound Notification Toggle
+      const soundToggleBtn = document.getElementById('btnSoundToggle');
+      if (soundToggleBtn) {
+        updateSoundToggleUI(soundToggleBtn);
+        soundToggleBtn.addEventListener('click', () => {
+          toggleSound();
+          updateSoundToggleUI(soundToggleBtn);
+        });
+      }
 
       // Tab Switching
       const tabBtns = document.querySelectorAll('.tab-btn');
@@ -592,7 +608,13 @@
 
       // Logout
       document.getElementById('btnAdminLogout')?.addEventListener('click', () => {
+        adminManager.stopPolling();
         AuthService.logout();
+      });
+
+      // Stop background polling on page unload
+      window.addEventListener('beforeunload', () => {
+        adminManager.stopPolling();
       });
 
       // Initial Load
