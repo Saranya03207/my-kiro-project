@@ -383,6 +383,48 @@ export class AdminManager {
     const isEdit = !!id;
     const saveBtn = document.getElementById('saveMenuItemBtn');
 
+    const name = (formData.name || '').trim();
+    const category = (formData.category || '').trim();
+    const price = parseFloat(formData.price);
+    const stockQuantity = parseInt(formData.stock_quantity, 10);
+    const stockThreshold = parseInt(formData.stock_threshold, 10);
+
+    if (!name) {
+      showToast('Please enter a valid item name', 'warning');
+      document.getElementById('menuItemName')?.focus();
+      return;
+    }
+    if (name.length < 2) {
+      showToast('Item name must be at least 2 characters long', 'warning');
+      document.getElementById('menuItemName')?.focus();
+      return;
+    }
+    if (!category) {
+      showToast('Please select a food category', 'warning');
+      document.getElementById('menuItemCategory')?.focus();
+      return;
+    }
+    if (isNaN(price) || price <= 0) {
+      showToast('Price must be greater than $0.00', 'warning');
+      document.getElementById('menuItemPrice')?.focus();
+      return;
+    }
+    if (price > 9999.99) {
+      showToast('Price cannot exceed $9,999.99', 'warning');
+      document.getElementById('menuItemPrice')?.focus();
+      return;
+    }
+    if (isNaN(stockQuantity) || stockQuantity < 0) {
+      showToast('Stock quantity cannot be negative', 'warning');
+      document.getElementById('menuItemStock')?.focus();
+      return;
+    }
+    if (isNaN(stockThreshold) || stockThreshold < 0) {
+      showToast('Alert threshold cannot be negative', 'warning');
+      document.getElementById('menuItemThreshold')?.focus();
+      return;
+    }
+
     try {
       if (saveBtn) {
         saveBtn.disabled = true;
@@ -401,12 +443,12 @@ export class AdminManager {
       }
 
       const payload = {
-        name: formData.name.trim(),
-        category: formData.category.trim(),
-        price: parseFloat(formData.price),
-        description: formData.description.trim() || 'Freshly prepared item',
-        stock_quantity: parseInt(formData.stock_quantity, 10),
-        stock_threshold: parseInt(formData.stock_threshold, 10) || 5
+        name,
+        category,
+        price,
+        description: (formData.description || '').trim() || 'Freshly prepared item',
+        stock_quantity: stockQuantity,
+        stock_threshold: isNaN(stockThreshold) ? 5 : stockThreshold
       };
 
       if (imageUrl) {
