@@ -157,6 +157,69 @@
 
   .tab-nav {
     margin-top: var(--spacing-md);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .tab-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-btn {
+    flex-shrink: 0;
+  }
+
+  /* Admin Order Cards and Actions on Mobile */
+  .order-card .order-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .order-card .order-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .order-card .order-body {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: var(--spacing-md) !important;
+  }
+
+  .order-card .order-body > div:last-child {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: var(--spacing-sm);
+  }
+
+  .order-card .order-body > div:last-child > div:first-child {
+    text-align: left !important;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .order-card .order-body > div:last-child > div:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .order-card .order-body > div:last-child > div:last-child .btn {
+    flex: 1;
+    min-width: 120px;
   }
 
   .modal-dialog {
