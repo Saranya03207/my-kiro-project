@@ -26,7 +26,10 @@ export class MenuManager {
     this.renderCategoryChips();
 
     if (loading) loading.classList.remove('hidden');
-    if (grid) grid.innerHTML = '';
+    if (grid) {
+      grid.setAttribute('aria-busy', 'true');
+      grid.innerHTML = '';
+    }
     if (emptyState) emptyState.classList.add('hidden');
     if (featuredSection) featuredSection.classList.add('hidden');
 
@@ -59,6 +62,7 @@ export class MenuManager {
         if (desc) desc.textContent = 'Could not connect to the menu service. Please refresh.';
       }
     } finally {
+      if (grid) grid.removeAttribute('aria-busy');
       if (loading) loading.classList.add('hidden');
     }
   }
