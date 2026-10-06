@@ -187,13 +187,13 @@ export class MenuManager {
           <p class="food-card-desc">${escapeHtml(item.description || 'Deliciously prepared with fresh campus ingredients.')}</p>
 
           <div class="food-card-footer">
-            <div class="qty-selector">
-              <button class="qty-btn btn-qty-minus" data-id="${item.id}" ${isOutOfStock || currentQty <= 1 ? 'disabled' : ''}>-</button>
-              <input type="number" class="qty-input" value="${currentQty}" min="1" max="${item.stock_quantity}" data-id="${item.id}" readonly>
-              <button class="qty-btn btn-qty-plus" data-id="${item.id}" ${isOutOfStock || currentQty >= item.stock_quantity ? 'disabled' : ''}>+</button>
+            <div class="qty-selector" role="group" aria-label="Quantity for ${escapeHtml(item.name)}">
+              <button class="qty-btn btn-qty-minus" data-id="${item.id}" aria-label="Decrease quantity of ${escapeHtml(item.name)}" title="Decrease quantity" ${isOutOfStock || currentQty <= 1 ? 'disabled' : ''}>-</button>
+              <input type="number" class="qty-input" value="${currentQty}" min="1" max="${item.stock_quantity}" data-id="${item.id}" aria-label="${escapeHtml(item.name)} quantity" readonly>
+              <button class="qty-btn btn-qty-plus" data-id="${item.id}" aria-label="Increase quantity of ${escapeHtml(item.name)}" title="Increase quantity" ${isOutOfStock || currentQty >= item.stock_quantity ? 'disabled' : ''}>+</button>
             </div>
 
-            <button class="btn btn-primary btn-add-cart" data-id="${item.id}" ${isOutOfStock ? 'disabled' : ''}>
+            <button class="btn btn-primary btn-add-cart" data-id="${item.id}" aria-label="${isOutOfStock ? `${escapeHtml(item.name)} is sold out` : `Add ${escapeHtml(item.name)} to cart`}" title="${isOutOfStock ? `${escapeHtml(item.name)} is sold out` : `Add ${escapeHtml(item.name)} to your order`}" ${isOutOfStock ? 'disabled' : ''}>
               ${isOutOfStock ? 'Sold Out' : '<span>+ Add</span>'}
             </button>
           </div>
