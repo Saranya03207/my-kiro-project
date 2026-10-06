@@ -100,6 +100,10 @@ flowchart TD
 - Bundled MCP server using stdio transport for IDEs and AI assistants (e.g., Kiro).
 - Read-only operational inspection into live menu availability, low-stock inventory alerts, order status, and student order histories without mutating database state.
 
+### 🪝 Kiro Automation Hooks (`.kiro/hooks/`)
+- **Python Syntax Validation (`python-validation.json`)**: Real-time project-specific hook that triggers on `PostFileSave` for any Python file (`.*\.py$`), executing `python -m compileall backend mcp_server` to ensure syntax validity in milliseconds without running full heavy test suites.
+- **Kironomics Activity Tracking (`kironomics.json`)**: Non-intrusive workspace tool and session activity counter.
+
 ---
 
 ## 🔄 Order Lifecycle State Machine
@@ -157,6 +161,10 @@ The system comes pre-seeded with popular campus canteen favorites and dedicated 
 
 ```text
 my-kiro-project/
+├── .kiro/                   # Kiro configuration & automation hooks
+│   └── hooks/               # Workspace event hooks
+│       ├── python-validation.json  # Auto Python syntax validation (PostFileSave)
+│       └── kironomics.json         # Workspace activity counter hook
 ├── backend/
 │   ├── models/              # SQLAlchemy ORM models (MenuItem, Order, OrderItem, Session)
 │   ├── schemas/             # Pydantic validation schemas (Menu, Order, Auth, etc.)
