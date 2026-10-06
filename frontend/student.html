@@ -86,9 +86,12 @@
               type="text" 
               id="menuSearchInput" 
               class="form-input" 
-              placeholder="Search dishes, burgers, drinks..."
-              aria-label="Search menu"
+              placeholder="Search dishes by name or description (e.g., Biryani, Dosa, Coffee)..."
+              aria-label="Search food items by name or description"
             >
+            <button type="button" class="search-clear-btn hidden" id="btnMenuSearchClear" aria-label="Clear search input" title="Clear search">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
           </div>
 
           <div class="filter-chips" id="categoryChips">
@@ -340,10 +343,22 @@
 
       // Search input handler
       const searchInput = document.getElementById('menuSearchInput');
+      const searchClearBtn = document.getElementById('btnMenuSearchClear');
       if (searchInput) {
         searchInput.addEventListener('input', debounce((e) => {
-          menuManager.setSearchTerm(e.target.value);
+          const val = e.target.value;
+          if (searchClearBtn) searchClearBtn.classList.toggle('hidden', !val.trim());
+          menuManager.setSearchTerm(val);
         }, 300));
+
+        if (searchClearBtn) {
+          searchClearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchClearBtn.classList.add('hidden');
+            menuManager.setSearchTerm('');
+            searchInput.focus();
+          });
+        }
       }
 
       // Empty cart "Browse Menu" button

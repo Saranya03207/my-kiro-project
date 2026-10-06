@@ -505,10 +505,33 @@
 
 .search-box .form-input {
   padding-left: 44px;
+  padding-right: 42px;
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-xs);
   min-height: 48px;
   font-size: var(--font-size-base);
+}
+
+.search-box .search-clear-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+.search-box .search-clear-btn:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
 }
 
 .filter-chips {
