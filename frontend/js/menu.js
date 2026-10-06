@@ -163,17 +163,13 @@ export class MenuManager {
 
     const currentQty = this.quantities[item.id] || 1;
     const imgSrc = getFoodImage(item);
+    const altText = `Freshly prepared ${escapeHtml(item.name)}${item.category ? ` (${escapeHtml(item.category)})` : ''}`;
+    const fallbackAltText = `Photo of ${escapeHtml(item.name)}`;
 
     return `
       <div class="food-card ${isOutOfStock ? 'unavailable' : ''}" data-id="${item.id}">
         <div class="food-card-media">
-          <img 
-            src="${imgSrc}" 
-            alt="${escapeHtml(item.name)}" 
-            class="food-card-img" 
-            loading="lazy"
-            onerror="this.onerror=null; this.src='assets/food/default-food.jpg';"
-          >
+          <img src="${imgSrc}" alt="${altText}" class="food-card-img" loading="lazy" onerror="this.onerror=null; this.src='assets/food/default-food.jpg'; this.alt='${fallbackAltText}';">
           <span class="food-card-category-pill">${getCategoryIcon(item.category, 14)} ${escapeHtml(item.category)}</span>
           <div class="food-card-stock-pill">${stockBadge}</div>
         </div>
