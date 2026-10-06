@@ -263,26 +263,45 @@
 
   <!-- Order Booking Success Modal -->
   <div class="modal-backdrop hidden" id="orderSuccessModal">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="max-width: 480px;">
       <div class="modal-header">
         <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--success);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--success);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
           <span>Booking Confirmed!</span>
         </h3>
-        <button class="modal-close-btn" id="closeSuccessModal">&times;</button>
+        <button class="modal-close-btn" id="closeSuccessModal" aria-label="Close confirmation modal">&times;</button>
       </div>
-      <div class="modal-body" style="text-align: center; padding: var(--spacing-xl);">
-        <div style="display: flex; justify-content: center; margin-bottom: var(--spacing-sm); color: var(--success);">
-          <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      <div class="modal-body" style="text-align: center; padding: var(--spacing-lg) var(--spacing-xl);">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 68px; height: 68px; border-radius: 50%; background: var(--success-light, #ecfdf5); color: var(--success); margin-bottom: var(--spacing-md);">
+          <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
-        <h4 style="margin-bottom: var(--spacing-xs);">Your order has been placed!</h4>
-        <p style="margin-bottom: var(--spacing-md);">Order ID: <strong id="successOrderId" style="font-size: 1.2rem; color: var(--primary);">#--</strong></p>
-        <p class="alert alert-info" style="text-align: left;">
-          Please proceed to the canteen counter once your status transitions to <strong>Ready for Pickup</strong>.
-        </p>
+        <h3 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; color: var(--text-primary);">Order Successfully Placed!</h3>
+        <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">Your canteen order has been sent to the kitchen.</p>
+
+        <div style="background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: var(--spacing-md); margin-bottom: var(--spacing-md); display: flex; justify-content: space-around; align-items: center; text-align: center;">
+          <div>
+            <div style="font-size: var(--font-size-xs); color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Order ID</div>
+            <strong id="successOrderId" style="font-size: 1.25rem; color: var(--primary);">#--</strong>
+          </div>
+          <div style="height: 32px; width: 1px; background: var(--border);"></div>
+          <div>
+            <div style="font-size: var(--font-size-xs); color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Total Paid</div>
+            <strong id="successOrderAmount" style="font-size: 1.25rem; color: var(--accent);">$0.00</strong>
+          </div>
+        </div>
+
+        <div class="alert alert-info" style="text-align: left; font-size: var(--font-size-xs); line-height: 1.5; margin-bottom: 0;">
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <div>
+              <strong>What's Next?</strong> Track your live cooking status under <strong>My Orders</strong>. You will receive an audio chime and notification when it's ready for counter pickup.
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" id="btnViewMyOrders">View My Orders</button>
+      <div class="modal-footer" style="display: flex; gap: var(--spacing-sm); justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary" id="btnContinueShopping">Order More Food</button>
+        <button type="button" class="btn btn-primary" id="btnViewMyOrders">Track My Order</button>
       </div>
     </div>
   </div>
@@ -384,6 +403,10 @@
           const order = await cartManager.placeOrder();
           if (order) {
             document.getElementById('successOrderId').textContent = `#${order.id}`;
+            const amountEl = document.getElementById('successOrderAmount');
+            if (amountEl && order.total_price) {
+              amountEl.textContent = `$${parseFloat(order.total_price).toFixed(2)}`;
+            }
             showModal('orderSuccessModal');
           }
         });
@@ -393,6 +416,11 @@
       document.getElementById('closeSuccessModal')?.addEventListener('click', () => {
         hideModal('orderSuccessModal');
         switchTab('tabOrders');
+      });
+
+      document.getElementById('btnContinueShopping')?.addEventListener('click', () => {
+        hideModal('orderSuccessModal');
+        switchTab('tabMenu');
       });
 
       document.getElementById('btnViewMyOrders')?.addEventListener('click', () => {
