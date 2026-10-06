@@ -132,19 +132,37 @@ export function hideModal(modalId) {
   }
 }
 
+export function getStatusLabel(status) {
+  const s = (status || '').toLowerCase();
+  switch (s) {
+    case 'pending':
+      return 'Order Placed';
+    case 'preparing':
+      return 'Preparing in Kitchen';
+    case 'ready':
+      return 'Ready for Pickup';
+    case 'completed':
+      return 'Completed';
+    case 'cancelled':
+      return 'Cancelled';
+    default:
+      return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown';
+  }
+}
+
 export function getStatusBadge(status) {
   const s = (status || '').toLowerCase();
   switch (s) {
     case 'pending':
-      return `<span class="badge badge-warning"><span class="badge-dot"></span> Pending</span>`;
+      return `<span class="badge badge-warning" title="Order placed and waiting kitchen confirmation"><span class="badge-dot"></span> Order Placed</span>`;
     case 'preparing':
-      return `<span class="badge badge-info"><span class="badge-dot pulse"></span> Preparing</span>`;
+      return `<span class="badge badge-info" title="Meal is being prepared in the kitchen"><span class="badge-dot pulse"></span> Preparing in Kitchen</span>`;
     case 'ready':
-      return `<span class="badge badge-success"><span class="badge-dot pulse"></span> Ready for Pickup</span>`;
+      return `<span class="badge badge-success" title="Food is ready for collection at canteen counter"><span class="badge-dot pulse"></span> Ready for Pickup</span>`;
     case 'completed':
-      return `<span class="badge badge-neutral"><span class="badge-dot"></span> Completed</span>`;
+      return `<span class="badge badge-neutral" title="Order has been collected by student"><span class="badge-dot"></span> Completed</span>`;
     case 'cancelled':
-      return `<span class="badge badge-error"><span class="badge-dot"></span> Cancelled</span>`;
+      return `<span class="badge badge-error" title="This order was cancelled"><span class="badge-dot"></span> Cancelled</span>`;
     default:
       return `<span class="badge badge-neutral">${escapeHtml(status)}</span>`;
   }
