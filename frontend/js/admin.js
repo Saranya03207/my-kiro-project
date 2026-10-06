@@ -604,7 +604,22 @@ export class AdminManager {
   async loadOrders() {
     this.activeTab = 'ordersMgmt';
     const container = document.getElementById('adminOrdersList');
-    if (container) container.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading orders...</div>`;
+    const refreshBtn = document.getElementById('btnRefreshAdminOrders');
+
+    if (container) {
+      container.innerHTML = `
+        <div class="loading-block" style="padding: 48px 24px; text-align: center;">
+          <span class="spinner" style="width: 28px; height: 28px; border-width: 3px; margin-bottom: 12px;"></span>
+          <div style="font-weight: 700; color: var(--text-primary); font-size: var(--font-size-base);">Loading incoming orders...</div>
+          <div class="text-muted" style="font-size: var(--font-size-xs); margin-top: 4px;">Synchronizing active kitchen orders from database</div>
+        </div>
+      `;
+    }
+
+    if (refreshBtn) {
+      refreshBtn.disabled = true;
+      refreshBtn.classList.add('loading');
+    }
 
     try {
       if (this.menuItems.length === 0) {
@@ -620,6 +635,11 @@ export class AdminManager {
     } catch (err) {
       console.error('Failed to load admin orders:', err);
       showToast('Could not load orders', 'error');
+    } finally {
+      if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.classList.remove('loading');
+      }
     }
   }
 

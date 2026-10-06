@@ -1457,6 +1457,10 @@
   to { transform: rotate(360deg); }
 }
 
+.btn.loading svg {
+  animation: spin 0.6s linear infinite;
+}
+
 .loading-block {
   display: flex;
   flex-direction: column;
