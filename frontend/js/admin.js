@@ -149,13 +149,25 @@ export class AdminManager {
       return;
     }
 
+    const outOfStockItems = items.filter(i => i.stock_quantity <= 0);
+    const lowStockItems = items.filter(i => i.stock_quantity > 0 && i.stock_quantity <= i.stock_threshold);
+
     container.innerHTML = `
-      <div class="alert alert-warning">
-        <span style="display: inline-flex; align-items: center;">${getSvgIcon('alertTriangle', 18)}</span>
-        <div>
-          <strong>${items.length} item(s) running low on inventory stock:</strong>
-          <ul style="margin-top: 4px; padding-left: 20px;">
-            ${items.map(i => `<li>${escapeHtml(i.name)}: <strong>${i.stock_quantity} left</strong> (alert threshold: ${i.stock_threshold})</li>`).join('')}
+      <div class="alert alert-warning" style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="display: inline-flex; align-items: center; color: var(--error);">${getSvgIcon('alertTriangle', 20)}</span>
+            <strong>Inventory Attention Required:</strong>
+            ${outOfStockItems.length > 0 ? `<span class="badge badge-error">${outOfStockItems.length} Out of Stock</span>` : ''}
+            ${lowStockItems.length > 0 ? `<span class="badge badge-warning">${lowStockItems.length} Low Stock</span>` : ''}
+          </div>
+        </div>
+        <div style="padding-left: 28px; font-size: var(--font-size-xs);">
+          <ul style="margin: 0; padding-left: 16px; line-height: 1.6;">
+            ${items.map(i => {
+              const isOut = i.stock_quantity <= 0;
+              return `<li><strong>${escapeHtml(i.name)}</strong>: ${isOut ? '<span style="color: var(--error); font-weight: 700;">OUT OF STOCK</span>' : `<span style="color: var(--warning); font-weight: 700;">${i.stock_quantity} left</span>`} (Threshold: ${i.stock_threshold})</li>`;
+            }).join('')}
           </ul>
         </div>
       </div>
@@ -535,13 +547,16 @@ export class AdminManager {
     tbody.innerHTML = items.map(item => {
       const isLow = item.stock_quantity <= item.stock_threshold;
       const isOut = item.stock_quantity <= 0;
-      let statusTag = '<span class="badge badge-success">Healthy</span>';
+      let statusTag = `<span class="badge badge-success" style="display: inline-flex; align-items: center; gap: 4px;">${getSvgIcon('check', 12)} Healthy</span>`;
       let fillClass = 'healthy';
+      let rowClass = '';
       if (isOut) {
-        statusTag = '<span class="badge badge-error">Out of Stock</span>';
+        rowClass = 'row-out-of-stock';
+        statusTag = `<span class="badge badge-error" style="display: inline-flex; align-items: center; gap: 4px;">${getSvgIcon('alertTriangle', 12)} Out of Stock</span>`;
         fillClass = 'out';
       } else if (isLow) {
-        statusTag = `<span class="badge badge-warning">Low Stock</span>`;
+        rowClass = 'row-low-stock';
+        statusTag = `<span class="badge badge-warning" style="display: inline-flex; align-items: center; gap: 4px;">${getSvgIcon('alertTriangle', 12)} Low Stock</span>`;
         fillClass = 'low';
       }
 
@@ -551,7 +566,7 @@ export class AdminManager {
       const imgSrc = getFoodImage(item);
 
       return `
-        <tr data-id="${item.id}">
+        <tr data-id="${item.id}" class="${rowClass}">
           <td><strong>#${item.id}</strong></td>
           <td style="display: flex; align-items: center; gap: 10px;">
             <img src="${imgSrc}" alt="${escapeHtml(item.name)}" class="table-thumb" onerror="this.src='assets/food/default-food.jpg'">

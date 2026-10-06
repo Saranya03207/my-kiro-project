@@ -1247,6 +1247,22 @@
   justify-content: space-between;
 }
 
+.row-out-of-stock {
+  background-color: rgba(239, 68, 68, 0.06) !important;
+}
+
+.row-out-of-stock td:first-child {
+  border-left: 4px solid var(--error) !important;
+}
+
+.row-low-stock {
+  background-color: rgba(245, 158, 11, 0.06) !important;
+}
+
+.row-low-stock td:first-child {
+  border-left: 4px solid var(--warning) !important;
+}
+
 /* --------------------------------------------------------------------------
    Modals & Dialogs
    -------------------------------------------------------------------------- */
