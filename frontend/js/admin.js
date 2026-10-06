@@ -656,18 +656,25 @@ export class AdminManager {
         actionButtons = `<span class="badge badge-neutral">Completed Workflow</span>`;
       }
 
+      const itemsCount = (order.items || []).reduce((acc, i) => acc + (i.quantity || 1), 0);
       const itemsSummary = (order.items || []).map(i => {
         const name = this.menuMap[i.menu_item_id] || `Item #${i.menu_item_id}`;
-        return `<div><strong>${i.quantity}×</strong> ${escapeHtml(name)} <span class="text-muted">(${formatPrice(i.price_at_order_time)})</span></div>`;
+        return `
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span class="badge badge-neutral" style="font-weight: 700; min-width: 28px; text-align: center;">${i.quantity}×</span>
+            <span style="font-weight: 600; color: var(--text-primary);">${escapeHtml(name)}</span>
+            <span class="text-muted" style="font-size: var(--font-size-xs);">(${formatPrice(i.price_at_order_time)})</span>
+          </div>
+        `;
       }).join('');
 
       return `
         <div class="order-card" data-order-id="${order.id}">
           <div class="order-header">
             <div class="order-meta">
-              <span class="order-id">Order #${order.id}</span>
-              <span class="badge badge-info">Student: ${escapeHtml(order.student_id)}</span>
-              <span class="order-date">${formatDateTime(order.created_at)}</span>
+              <span class="order-id" style="font-weight: 800; font-size: 1.05rem; color: var(--text-primary);"><span style="color: var(--accent);">#</span>${order.id}</span>
+              <span class="badge badge-info" style="display: inline-flex; align-items: center; gap: 4px;">${getSvgIcon('user', 13)} Student: <strong>${escapeHtml(order.student_id)}</strong></span>
+              <span class="order-date" style="display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted); font-size: var(--font-size-xs);">${getSvgIcon('clock', 13)} ${formatDateTime(order.created_at)}</span>
             </div>
             <div>
               ${getStatusBadge(order.status)}
@@ -675,14 +682,15 @@ export class AdminManager {
           </div>
 
           <div class="order-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md)">
-            <div style="font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.6;">
+            <div style="font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.6; min-width: 220px;">
               ${itemsSummary}
             </div>
 
             <div style="display: flex; align-items: center; gap: var(--spacing-xl);">
-              <div style="text-align: right">
-                <div style="font-size: var(--font-size-xs); color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Total</div>
-                <div style="font-size: 1.35rem; font-weight: 800; color: var(--accent);">${formatPrice(order.total_price)}</div>
+              <div style="text-align: right; min-width: 90px;">
+                <div style="font-size: var(--font-size-xs); color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Order Total</div>
+                <div style="font-size: 1.35rem; font-weight: 800; color: var(--accent); line-height: 1.2;">${formatPrice(order.total_price)}</div>
+                <div style="font-size: var(--font-size-xs); color: var(--text-muted);">${itemsCount} item${itemsCount !== 1 ? 's' : ''}</div>
               </div>
 
               <div style="display: flex; gap: 8px;">
