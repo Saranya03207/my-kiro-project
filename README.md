@@ -3,7 +3,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.8%2B%20%7C%203.13-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688.svg)](https://fastapi.tiangolo.com/)
 [![SQLite](https://img.shields.io/badge/SQLite-3-003B57.svg)](https://www.sqlite.org/)
-[![Tests](https://img.shields.io/badge/tests-323%20passed-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-342%20passed-brightgreen.svg)](tests/)
 [![Architecture](https://img.shields.io/badge/frontend-Vanilla%20ES6%2B-F7DF1E.svg)](frontend/)
 [![MCP](https://img.shields.io/badge/MCP-FastMCP%20Ready-purple.svg)](mcp_server/)
 
@@ -217,70 +217,92 @@ my-kiro-project/
 
 ---
 
-## ⚡ Quick Start
+## ⚡ Quick Start & Setup Guide
 
 ### 1. Prerequisites
-- **Python 3.8+** (Python 3.11–3.13 recommended)
-- **pip** package manager
-- Any modern web browser (Chrome, Firefox, Safari, Edge)
+- **Python 3.8+** (Python 3.11–3.13 tested and verified)
+- **pip** Python package manager
+- Any modern web browser (Google Chrome, Firefox, Microsoft Edge, Safari)
 
 ### 2. Environment Setup
 ```bash
-# Clone the repository and navigate into project directory
+# Clone repository and navigate into project directory
 cd my-kiro-project
 
 # Create a virtual environment
 python -m venv venv
 
-# Activate the virtual environment
+# Activate virtual environment
 # Windows (PowerShell):
 .\venv\Scripts\Activate.ps1
-# Windows (cmd):
+# Windows (Command Prompt):
 .\venv\Scripts\activate.bat
 # macOS / Linux:
 source venv/bin/activate
 
-# Install dependencies
+# Install all required Python dependencies
 pip install -r requirements.txt
 
-# (Optional) Setup environment variables
+# (Optional) Copy default environment configuration
 cp .env.example .env
 ```
 
-### 3. Run the Backend API
+### 3. Database Initialization
+Database initialization is completely automatic. On application startup, the SQLite database at `data/canteen.db` is initialized with foreign keys enabled, tables created, and default menu dishes seeded if empty.
+
+### 4. Run the Application
+
+#### Step 4A: Start the FastAPI Backend (Port 8000)
+In your primary terminal:
 ```bash
 python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 ```
-- API Base URL: `http://localhost:8000`
-- Interactive Swagger UI Docs: `http://localhost:8000/docs`
-- ReDoc Alternative Docs: `http://localhost:8000/redoc`
-- Health Check: `http://localhost:8000/health`
+- **API Base URL**: `http://localhost:8000`
+- **Interactive Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc Documentation**: `http://localhost:8000/redoc`
+- **Health Check Endpoint**: `http://localhost:8000/health`
 
-### 4. Run the Frontend Client
-In a separate terminal (with the virtual environment active):
+#### Step 4B: Start the Frontend Web Server (Port 3000)
+In a second terminal:
 ```bash
 python -m http.server 3000 --directory frontend
 ```
-Open your browser and navigate to:
+Navigate to the application pages in your web browser:
 - **Login / Landing Page**: `http://localhost:3000/index.html`
-- **Student Portal**: `http://localhost:3000/student.html`
-- **Admin Portal**: `http://localhost:3000/admin.html`
+- **Student Food Portal**: `http://localhost:3000/student.html`
+- **Admin Management Portal**: `http://localhost:3000/admin.html`
 
-### 5. (Optional) Run the MCP Server
+### 5. Running the Model Context Protocol (MCP) Server
+To expose canteen query tools to AI agents:
 ```bash
 python -m mcp_server.server
+```
+
+### 6. Code Validation & Test Suite
+Run the full test suite (342 automated unit, property-based, and integration tests):
+```bash
+# Run complete test suite quietly
+pytest -q --tb=no
+
+# Run specific test suites
+pytest tests/unit/ -v
+pytest tests/properties/ -v
+pytest tests/integration/ -v
+
+# Run the Kiro Python compile validation hook
+python -m compileall backend mcp_server
 ```
 
 ---
 
 ## 🔑 Login & Roles
 
-The system uses server-side session tokens with role-based authorization. For development and evaluation, log in from `index.html`:
+The system uses server-side session tokens with role-based authorization. Log in from `index.html` using the following credentials:
 
-| Role | Identifier Format | Access Scope |
-| :--- | :--- | :--- |
-| **Student** | Any valid student ID (e.g. `STU001`, `STU12345`) | Menu browsing, cart, order creation, live order tracking, order history |
-| **Admin** | Any valid admin ID (e.g. `ADMIN001`, `admin`) | Menu management, image upload, inventory controls, order processing, analytics |
+| Role | Default Identifier | Access Scope | Audio Notifications |
+| :--- | :--- | :--- | :--- |
+| **Student** | `S001` (or any `S...`) | Menu browsing, cart, order placement, live status tracking, order history | Order confirmation chime + Ready-for-pickup chime |
+| **Admin** | `admin001` (or any `admin...`) | Menu CRUD, custom image uploads, stock threshold alerts, order state machine, analytics | New incoming student order alert |
 
 ---
 
