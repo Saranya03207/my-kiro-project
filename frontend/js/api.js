@@ -33,6 +33,28 @@ export class ApiError extends Error {
   isServerError() {
     return this.status >= 500;
   }
+
+  getUserFriendlyMessage() {
+    if (this.status === 0 || this.code === 'NETWORK_ERROR') {
+      return 'Unable to connect to the canteen server. Please check your network connection.';
+    }
+    if (this.status === 401) {
+      return 'Your session has expired. Please log in again.';
+    }
+    if (this.status === 403) {
+      return 'You do not have permission to perform this canteen action.';
+    }
+    if (this.status === 404) {
+      return this.message || 'The requested canteen item or booking was not found.';
+    }
+    if (this.status === 400 || this.status === 422) {
+      return this.message || 'Invalid request. Please verify the entered information.';
+    }
+    if (this.status >= 500) {
+      return 'The canteen server encountered a temporary error. Please try again shortly.';
+    }
+    return this.message || 'An unexpected error occurred. Please try again.';
+  }
 }
 
 class ApiClient {
@@ -97,10 +119,26 @@ class ApiClient {
             errorMsg = data.detail.error.message || errorMsg;
             errorCode = data.detail.error.code || errorCode;
             errorDetails = data.detail.error.details || null;
+          } else if (Array.isArray(data.detail)) {
+            const fieldMsgs = data.detail.map(d => {
+              const field = d.loc ? d.loc[d.loc.length - 1] : 'Field';
+              return `${field}: ${d.msg}`;
+            }).join('; ');
+            errorMsg = `Validation error: ${fieldMsgs}`;
+            errorCode = 'VALIDATION_ERROR';
+            errorDetails = data.detail;
           } else if (typeof data.detail === 'string') {
             errorMsg = data.detail;
           } else if (data.message) {
             errorMsg = data.message;
+          }
+        }
+
+        // Sanitize technical stack traces or internal DB errors for status >= 500
+        if (response.status >= 500) {
+          const rawLower = String(errorMsg).toLowerCase();
+          if (rawLower.includes('traceback') || rawLower.includes('sql') || rawLower.includes('database') || rawLower.includes('operationalerror')) {
+            errorMsg = 'A temporary canteen server error occurred. Please try again shortly.';
           }
         }
 
