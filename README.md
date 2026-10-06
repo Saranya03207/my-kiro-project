@@ -7,7 +7,7 @@
 [![Architecture](https://img.shields.io/badge/frontend-Vanilla%20ES6%2B-F7DF1E.svg)](frontend/)
 [![MCP](https://img.shields.io/badge/MCP-FastMCP%20Ready-purple.svg)](mcp_server/)
 
-A full-stack campus canteen management and food booking system built for **Kiro University**. The application enables students to browse interactive menus, place food bookings, and track order progress in real-time with dual-channel audio and visual notifications. It empowers canteen administrators with comprehensive tools to manage food items with image uploads, monitor real-time stock levels with low-stock alerts, process live orders through a robust state machine, and analyze daily and historical sales trends.
+A full-stack campus canteen management and food booking system built for **Kiro University**. The application enables students to browse interactive menus, place food bookings, and track order progress in real-time with dedicated audio and visual notifications. It empowers canteen administrators with comprehensive tools to manage food items with custom image uploads, monitor real-time stock levels with low-stock alerts, track incoming student orders with live audio alerts, process orders through a robust state machine, and analyze daily and historical sales trends.
 
 ---
 
@@ -77,7 +77,7 @@ flowchart TD
 - **Instant Search & Filtering**: Real-time client-side search across dish names and descriptions.
 - **Cart Management**: Add items to cart with live quantity limits, stock checks, and total calculation.
 - **Order Placement & Tracking**: Place bookings and track order status live (`pending` → `preparing` → `ready` → `completed` / `cancelled`).
-- **Dual-Channel Notifications**: Real-time audio chimes and visual alerts for successful order confirmation and when orders become ready for pickup (local HTML5 Audio with Web Audio API synthesis fallback).
+- **Dual-Channel Audio Notifications**: Dedicated real-time audio chimes for successful order confirmation (`order-confirmed.wav`) and when orders become ready for pickup (`order-ready.wav`), backed by Web Audio API synthesis fallback and accessible Sound On/Off control.
 - **Order History**: View past orders with complete item breakdowns, timestamps, and status tags.
 
 ### 🛠️ Admin Portal (`/admin.html`)
@@ -112,10 +112,10 @@ flowchart TD
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Pending: Student places booking
-    Pending --> Preparing: Admin accepts & starts prep
+    [*] --> Pending: Student places booking (Order Confirmed Sound)
+    Pending --> Preparing: Admin accepts & starts prep (Incoming Order Alert)
     Pending --> Cancelled: Cancelled before prep
-    Preparing --> Ready: Food preparation finished (Audio & Toast Alert)
+    Preparing --> Ready: Food preparation finished (Order Ready Sound & Toast)
     Preparing --> Cancelled: Exceptional cancellation
     Ready --> Completed: Order collected by student
     Completed --> [*]
@@ -153,7 +153,7 @@ The system comes pre-seeded with popular campus canteen favorites and dedicated 
 | **Backend API** | Python 3.8+ / 3.13, FastAPI 0.115+, Uvicorn, Pydantic v2 |
 | **Database & ORM** | SQLite (`data/canteen.db`), SQLAlchemy ORM |
 | **Frontend** | Vanilla HTML5, CSS3 (Responsive Grid/Flexbox), ES6+ JavaScript modules (zero external UI dependencies) |
-| **Media & Audio** | Local asset storage (`frontend/assets/food/`), HTML5 Audio & Web Audio API synthesis |
+| **Media & Audio** | Local asset storage (`frontend/assets/food/`), HTML5 Audio & Web Audio API dual synthesis (`order-confirmed.wav`, `order-ready.wav`, `new-order.wav`) |
 | **AI / Protocol** | Model Context Protocol (`mcp` Python SDK with FastMCP) |
 | **Testing** | pytest, pytest-asyncio, FastAPI TestClient, Hypothesis (property-based testing) |
 
@@ -180,15 +180,16 @@ my-kiro-project/
 ├── frontend/
 │   ├── assets/              # Static media
 │   │   ├── food/            # Food item photos (biryani, curd-rice, lemon-rice, uploads, fallbacks)
-│   │   └── sounds/          # Sound notification chimes (order-ready.wav, order-confirmed.wav)
+│   │   └── sounds/          # Sound notification chimes (order-ready.wav, order-confirmed.wav, new-order.wav)
 │   ├── css/                 # Stylesheets (base, components, layouts, responsive)
 │   ├── js/                  # Modular ES6 JavaScript
+│   │   ├── admin.js         # Admin dashboard, inventory, menu CRUD, image upload & order polling
 │   │   ├── api.js           # Centralized API client with multipart support
+│   │   ├── audio.js         # Audio notification manager (HTML5 Audio & Web Audio API fallback)
 │   │   ├── auth.js          # Client-side session and auth state
 │   │   ├── cart.js          # Cart state, item counters, stock checks
 │   │   ├── menu.js          # Menu rendering, category filtering, search
-│   │   ├── orders.js        # Order history and live status tracking
-│   │   ├── admin.js         # Admin dashboard, inventory, menu CRUD & image upload
+│   │   ├── orders.js        # Order history, live status tracking & pickup alerts
 │   │   └── utils.js         # Formatting, image fallback logic, notifications
 │   ├── index.html           # Landing page & role-based login
 │   ├── student.html         # Student ordering and status tracking portal
@@ -453,6 +454,11 @@ Uploaded images are saved in <code>frontend/assets/food/</code> and served stati
 <details>
 <summary><b>3. How do I reset or re-seed the SQLite database?</b></summary>
 Delete <code>data/canteen.db</code> and re-run the backend server to create tables, then execute <code>python scripts/add_briyani_to_menu.py</code>, <code>python scripts/add_curd_rice_to_menu.py</code>, and <code>python scripts/add_lemon_rice_to_menu.py</code> to populate initial dishes.
+</details>
+
+<details>
+<summary><b>4. How does the sound notification system handle browser autoplay restrictions?</b></summary>
+Modern browsers restrict unprompted audio autoplay. The application attaches early user gesture listeners (<code>pointerdown</code>, <code>keydown</code>, <code>click</code>) to unlock the audio context on first interaction, and includes a resilient Web Audio API synthesis fallback that ensures chimes still sound even if direct HTML5 Audio file playback is hindered. Sound can also be toggled on/off via the header button at any time.
 </details>
 
 ---

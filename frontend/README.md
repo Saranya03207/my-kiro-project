@@ -41,6 +41,25 @@ The frontend for the **Smart Canteen Booking System** is built with **Vanilla HT
 
 ---
 
+## 🔊 Audio Notification System
+
+The application features a zero-dependency, local-first audio notification architecture managed by `frontend/js/audio.js`:
+
+| Event | Target Portal | Sound Asset | Fallback Web Audio Tones | Purpose |
+| :--- | :--- | :--- | :--- | :--- |
+| **Order Confirmation** | Student | `assets/sounds/order-confirmed.wav` | G5 (783.99 Hz) → C6 (1046.50 Hz) | Confirms booking was successfully placed and submitted to the canteen. |
+| **Ready for Pickup** | Student | `assets/sounds/order-ready.wav` | D5 (587.33 Hz) → G5 (783.99 Hz) | Alerts student that kitchen has finished preparing their meal for pickup. |
+| **Incoming New Order** | Admin | `assets/sounds/new-order.wav` | F5/C6 (698/1046 Hz) → A5/E6 (880/1318 Hz) | Alerts kitchen staff that a new student order has been received. |
+
+### Key Audio Features:
+- **Zero External Dependencies**: All sound assets are bundled locally in `frontend/assets/sounds/`.
+- **Web Audio API Synthesis Fallback**: If HTML5 Audio element playback fails or is blocked, synthetic oscillator tones automatically generate the chime.
+- **Autoplay Policy Handling**: Early user gesture capture (`pointerdown`, `keydown`, `click`) unlocks the browser's `AudioContext` seamlessly.
+- **Unified Sound Toggle**: Both Student and Admin headers include an accessible SVG Sound On / Sound Off button synced with `localStorage` (`canteen_sound_notifications`). When disabled, the UI continues updating silently.
+- **Deduplicated Audio Triggers**: Order polling uses ID tracking (`Set`) ensuring chimes play exactly once per event and never overlap during bulk updates.
+
+---
+
 ## 📁 Directory Structure
 
 ```text
