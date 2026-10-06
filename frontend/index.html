@@ -112,11 +112,28 @@
       const roleButtons = document.querySelectorAll('.role-tab-btn');
       const roleInput = document.getElementById('roleInput');
       const userIdInput = document.getElementById('userIdInput');
+      const userIdError = document.getElementById('userIdError');
       const demoHint = document.getElementById('demoHint');
       const form = document.getElementById('loginForm');
       const btnLogin = document.getElementById('btnLogin');
 
       const infoIcon = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+
+      function clearFieldError() {
+        userIdError.textContent = '';
+        userIdInput.style.borderColor = '';
+        userIdInput.removeAttribute('aria-invalid');
+      }
+
+      function showFieldError(msg) {
+        userIdError.textContent = msg;
+        userIdInput.style.borderColor = 'var(--error)';
+        userIdInput.setAttribute('aria-invalid', 'true');
+        userIdInput.focus();
+      }
+
+      // Clear validation error as user types
+      userIdInput.addEventListener('input', clearFieldError);
 
       // Role button toggles
       roleButtons.forEach(btn => {
@@ -125,6 +142,7 @@
           btn.classList.add('active');
           const selectedRole = btn.dataset.role;
           roleInput.value = selectedRole;
+          clearFieldError();
 
           if (selectedRole === 'admin') {
             userIdInput.placeholder = 'e.g. admin001';
@@ -139,12 +157,26 @@
       // Submit form
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        clearFieldError();
+
         const userId = userIdInput.value.trim();
         const role = roleInput.value;
 
         if (!userId) {
+          showFieldError('Please enter your User ID');
           showToast('Please enter your User ID', 'warning');
-          userIdInput.focus();
+          return;
+        }
+
+        if (userId.length < 3) {
+          showFieldError('User ID must be at least 3 characters');
+          showToast('User ID must be at least 3 characters', 'warning');
+          return;
+        }
+
+        if (!/^[a-zA-Z0-9_-]+$/.test(userId)) {
+          showFieldError('User ID can only contain letters, numbers, hyphens, and underscores');
+          showToast('Invalid User ID format', 'warning');
           return;
         }
 
@@ -165,11 +197,14 @@
           } else {
             btnLogin.disabled = false;
             btnLogin.innerHTML = 'Sign In to Canteen';
+            showFieldError('Unable to sign in. Please verify your ID and role.');
           }
         } catch (err) {
           btnLogin.disabled = false;
           btnLogin.innerHTML = 'Sign In to Canteen';
-          showToast('Failed to sign in. Please verify your ID.', 'error');
+          const errMsg = err?.message || 'Failed to sign in. Please verify your ID.';
+          showFieldError(errMsg);
+          showToast(errMsg, 'error');
         }
       });
     });
