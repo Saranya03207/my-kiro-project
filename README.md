@@ -77,7 +77,7 @@ flowchart TD
 - **Instant Search & Filtering**: Real-time client-side search across dish names and descriptions.
 - **Cart Management**: Add items to cart with live quantity limits, stock checks, and total calculation.
 - **Order Placement & Tracking**: Place bookings and track order status live (`pending` → `preparing` → `ready` → `completed` / `cancelled`).
-- **Dual-Channel Notifications**: Real-time audio chime and visual banner alerts when an order is ready for pickup (HTML5 Audio with Web Audio API synthesis fallback).
+- **Dual-Channel Notifications**: Real-time audio chimes and visual alerts for successful order confirmation and when orders become ready for pickup (local HTML5 Audio with Web Audio API synthesis fallback).
 - **Order History**: View past orders with complete item breakdowns, timestamps, and status tags.
 
 ### 🛠️ Admin Portal (`/admin.html`)
@@ -170,7 +170,7 @@ my-kiro-project/
 ├── frontend/
 │   ├── assets/              # Static media
 │   │   ├── food/            # Food item photos (biryani, curd-rice, lemon-rice, uploads, fallbacks)
-│   │   └── audio/           # Notification chimes
+│   │   └── sounds/          # Sound notification chimes (order-ready.wav, order-confirmed.wav)
 │   ├── css/                 # Stylesheets (base, components, layouts, responsive)
 │   ├── js/                  # Modular ES6 JavaScript
 │   │   ├── api.js           # Centralized API client with multipart support

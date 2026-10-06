@@ -6,6 +6,7 @@
 import apiClient from './api.js';
 import AuthService from './auth.js';
 import { formatPrice, showToast, escapeHtml, getFoodImage, getSvgIcon } from './utils.js';
+import { playOrderConfirmedSound } from './audio.js';
 
 export class CartManager {
   constructor() {
@@ -233,6 +234,9 @@ export class CartManager {
       this.clear();
       showToast(`Order #${createdOrder.id} placed successfully!`, 'success');
       sessionStorage.setItem('canteen_latest_order_id', createdOrder.id);
+
+      // Play pleasant confirmation chime for confirmed order
+      playOrderConfirmedSound();
 
       return createdOrder;
     } catch (err) {

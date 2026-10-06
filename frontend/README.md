@@ -16,7 +16,7 @@ The frontend for the **Smart Canteen Booking System** is built with **Vanilla HT
 - **Visual Food Cards**: Displays local high-resolution food photography (e.g., South Indian Chicken Biryani, Curd Rice, Lemon Rice) with automatic fallback to category/default imagery.
 - **Live Cart Management**: Adjust item quantities, preview order totals, and validate against current stock limits.
 - **Real-Time Order Tracking**: Order status cards updated via polling (`pending` → `preparing` → `ready` → `completed`).
-- **Dual-Channel Audio Notifications**: Plays audio chime and displays a toast banner when an order status advances to `ready` (utilizes HTML5 Audio with Web Audio API synthesis fallback).
+- **Dual-Channel Audio Notifications**: Plays pleasant audio chimes and displays visual confirmations for order confirmation and when orders become ready for pickup (utilizes local HTML5 Audio with Web Audio API synthesis fallback).
 - **Order History**: Review past bookings, line item breakdowns, timestamps, and order statuses.
 
 ### 3. `admin.html` - Canteen Operations Center
@@ -44,7 +44,7 @@ The frontend for the **Smart Canteen Booking System** is built with **Vanilla HT
 frontend/
 ├── assets/
 │   ├── food/              # Food imagery (biryani, curd-rice, lemon-rice, default fallbacks, uploaded files)
-│   └── audio/             # Sound notification assets (notification.mp3)
+│   └── sounds/            # Sound notification assets (order-ready.wav, order-confirmed.wav)
 ├── css/
 │   ├── base.css           # Global typography, color variables, resets
 │   ├── components.css     # Buttons, cards, badges, inputs, modals

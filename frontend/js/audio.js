@@ -6,12 +6,14 @@
 
 const STORAGE_KEY = 'canteen_sound_notifications';
 const AUDIO_ASSET_PATH = 'assets/sounds/order-ready.wav';
+const ORDER_CONFIRMED_ASSET_PATH = 'assets/sounds/order-confirmed.wav';
 
 export class AudioManager {
   constructor() {
     this.audioContext = null;
     this.isUnlocked = false;
     this.audioElement = null;
+    this.orderConfirmedAudioElement = null;
     this.initAudioUnlock();
   }
 
@@ -162,6 +164,104 @@ export class AudioManager {
   }
 
   /**
+   * Synthesize a pleasant 3-tone confirmation chime via Web Audio API
+   * Used as a resilient fallback if HTML5 Audio fails or file is blocked
+   */
+  synthesizeOrderConfirmedChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+
+      if (!this.audioContext) {
+        this.audioContext = new AudioCtx();
+      }
+
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume().catch(() => {});
+      }
+
+      const ctx = this.audioContext;
+      const now = ctx.currentTime;
+
+      // Tone 1: E5 (659.25 Hz)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(659.25, now);
+      gain1.gain.setValueAtTime(0.001, now);
+      gain1.gain.exponentialRampToValueAtTime(0.30, now + 0.015);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.36);
+
+      // Tone 2: G5 (783.99 Hz) starting at +0.12s
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(783.99, now + 0.12);
+      gain2.gain.setValueAtTime(0.001, now + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.35, now + 0.135);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.12);
+      osc2.stop(now + 0.46);
+
+      // Tone 3: C6 (1046.50 Hz) starting at +0.24s with warm decay
+      const osc3 = ctx.createOscillator();
+      const gain3 = ctx.createGain();
+      osc3.type = 'sine';
+      osc3.frequency.setValueAtTime(1046.50, now + 0.24);
+      gain3.gain.setValueAtTime(0.001, now + 0.24);
+      gain3.gain.exponentialRampToValueAtTime(0.40, now + 0.255);
+      gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+      osc3.connect(gain3);
+      gain3.connect(ctx.destination);
+      osc3.start(now + 0.24);
+      osc3.stop(now + 0.66);
+
+    } catch (err) {
+      console.warn('Web Audio synthesis fallback error for order confirmation:', err);
+    }
+  }
+
+  /**
+   * Play the order-confirmed sound notification
+   * Safe, non-blocking, and gracefully handles autoplay restrictions
+   */
+  async playOrderConfirmedSound() {
+    if (!this.isSoundEnabled()) {
+      return;
+    }
+
+    try {
+      if (!this.orderConfirmedAudioElement) {
+        this.orderConfirmedAudioElement = new Audio(ORDER_CONFIRMED_ASSET_PATH);
+        this.orderConfirmedAudioElement.volume = 0.6;
+        this.orderConfirmedAudioElement.preload = 'auto';
+      }
+
+      this.orderConfirmedAudioElement.currentTime = 0;
+      const playPromise = this.orderConfirmedAudioElement.play();
+
+      if (playPromise !== undefined) {
+        await playPromise.catch((err) => {
+          // If browser blocked HTML5 Audio (NotAllowedError), try Web Audio API fallback
+          if (err && err.name === 'NotAllowedError') {
+            this.synthesizeOrderConfirmedChime();
+          } else {
+            this.synthesizeOrderConfirmedChime();
+          }
+        });
+      }
+    } catch {
+      this.synthesizeOrderConfirmedChime();
+    }
+  }
+
+  /**
    * Update all registered sound toggle buttons on the page
    */
   notifyToggleButtons() {
@@ -194,7 +294,7 @@ export class AudioManager {
          </svg>`;
 
     btn.innerHTML = `${iconSvg} <span>${enabled ? 'Sound On' : 'Sound Off'}</span>`;
-    btn.setAttribute('aria-label', enabled ? 'Mute order ready sound notifications' : 'Enable order ready sound notifications');
+    btn.setAttribute('aria-label', enabled ? 'Mute sound notifications' : 'Enable sound notifications');
     btn.setAttribute('aria-pressed', enabled ? 'true' : 'false');
     btn.classList.toggle('sound-muted', !enabled);
   }
@@ -204,6 +304,10 @@ export const audioManager = new AudioManager();
 
 export function playOrderReadySound() {
   return audioManager.playOrderReadySound();
+}
+
+export function playOrderConfirmedSound() {
+  return audioManager.playOrderConfirmedSound();
 }
 
 export function isSoundEnabled() {
