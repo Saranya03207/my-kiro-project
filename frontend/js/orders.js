@@ -188,7 +188,18 @@ export class OrderManager {
 
     if (filtered.length === 0) {
       listEl.innerHTML = '';
-      if (emptyEl) emptyEl.classList.remove('hidden');
+      if (emptyEl) {
+        emptyEl.classList.remove('hidden');
+        const titleEl = document.getElementById('ordersEmptyStateTitle');
+        const descEl = document.getElementById('ordersEmptyStateDesc');
+        if (this.orders.length === 0) {
+          if (titleEl) titleEl.textContent = 'No Orders Placed Yet';
+          if (descEl) descEl.textContent = "You haven't placed any canteen orders yet. Explore our fresh menu to order your meals!";
+        } else {
+          if (titleEl) titleEl.textContent = 'No Matching Orders';
+          if (descEl) descEl.textContent = `No orders found in the "${this.currentFilter}" filter. Select "All" to view your full booking history.`;
+        }
+      }
       return;
     }
 
