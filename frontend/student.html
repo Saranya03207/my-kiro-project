@@ -160,13 +160,14 @@
 
             <!-- Empty Cart State -->
             <div class="empty-state" id="cartEmptyState">
-              <span class="empty-state-icon" style="color: var(--gray-400);">
-                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+              <span class="empty-state-icon" style="color: var(--accent); opacity: 0.85;">
+                <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
               </span>
-              <h3 class="empty-state-title">Your cart is empty</h3>
-              <p class="empty-state-desc">Browse our delicious canteen menu and add items to your cart to book.</p>
-              <button class="btn btn-primary" id="btnBrowseMenu" style="margin-top: var(--spacing-md)">
-                Browse Menu
+              <h3 class="empty-state-title">Your food basket is currently empty</h3>
+              <p class="empty-state-desc">You have not added any dishes to your order yet. Explore our campus menu to select freshly prepared meals, snacks, and beverages.</p>
+              <button type="button" class="btn btn-primary" id="btnBrowseMenu" style="margin-top: var(--spacing-md);" aria-label="Return to menu and browse dishes">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+                <span>Browse Canteen Menu</span>
               </button>
             </div>
           </div>
