@@ -1,0 +1,17 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Python Syntax Validation",
+      "description": "Automatically validate Smart Canteen Python files after relevant source changes.",
+      "trigger": "PostFileSave",
+      "matcher": ".*\\.py$",
+      "action": {
+        "type": "command",
+        "command": "python -m compileall backend mcp_server",
+        "timeout": 30
+      },
+      "timeout": 30
+    }
+  ]
+}
