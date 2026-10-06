@@ -673,9 +673,12 @@ export class AdminManager {
       `;
     }
 
+    const refreshText = refreshBtn?.querySelector('span');
     if (refreshBtn) {
       refreshBtn.disabled = true;
       refreshBtn.classList.add('loading');
+      refreshBtn.setAttribute('aria-busy', 'true');
+      if (refreshText) refreshText.textContent = 'Refreshing...';
     }
 
     try {
@@ -696,6 +699,8 @@ export class AdminManager {
       if (refreshBtn) {
         refreshBtn.disabled = false;
         refreshBtn.classList.remove('loading');
+        refreshBtn.removeAttribute('aria-busy');
+        if (refreshText) refreshText.textContent = 'Refresh Orders';
       }
     }
   }
