@@ -72,16 +72,19 @@ export class CartManager {
     const item = this.items.find(i => i.id === itemId);
     if (!item) return;
 
-    if (newQty <= 0) {
+    const parsedQty = parseInt(newQty, 10);
+    if (isNaN(parsedQty)) return;
+
+    if (parsedQty <= 0) {
       this.removeItem(itemId);
       return;
     }
 
-    if (newQty > item.stock_quantity) {
-      showToast(`Max available stock is ${item.stock_quantity}`, 'warning');
-      item.quantity = item.stock_quantity;
+    if (parsedQty > item.stock_quantity) {
+      showToast(`Maximum available stock for "${item.name}" is ${item.stock_quantity}`, 'warning');
+      item.quantity = Math.max(1, item.stock_quantity);
     } else {
-      item.quantity = newQty;
+      item.quantity = parsedQty;
     }
 
     this.saveToStorage();
@@ -161,17 +164,17 @@ export class CartManager {
             <div class="cart-item-unit-price">${formatPrice(item.price)} each • Max ${item.stock_quantity}</div>
           </div>
 
-          <div class="qty-selector">
-            <button class="qty-btn btn-decrease" aria-label="Decrease quantity" data-id="${item.id}">-</button>
-            <input type="number" class="qty-input" value="${item.quantity}" min="1" max="${item.stock_quantity}" data-id="${item.id}" readonly>
-            <button class="qty-btn btn-increase" aria-label="Increase quantity" data-id="${item.id}" ${item.quantity >= item.stock_quantity ? 'disabled' : ''}>+</button>
+          <div class="qty-selector" role="group" aria-label="Quantity for ${escapeHtml(item.name)}">
+            <button type="button" class="qty-btn btn-decrease" data-id="${item.id}" aria-label="Decrease quantity for ${escapeHtml(item.name)}" title="Decrease quantity">-</button>
+            <input type="number" class="qty-input" value="${item.quantity}" min="1" max="${item.stock_quantity}" data-id="${item.id}" readonly aria-label="Current quantity of ${escapeHtml(item.name)}" aria-valuenow="${item.quantity}" aria-valuemin="1" aria-valuemax="${item.stock_quantity}">
+            <button type="button" class="qty-btn btn-increase" data-id="${item.id}" aria-label="Increase quantity for ${escapeHtml(item.name)}" title="${item.quantity >= item.stock_quantity ? 'Maximum stock reached' : 'Increase quantity'}" ${item.quantity >= item.stock_quantity ? 'disabled' : ''}>+</button>
           </div>
 
           <div class="cart-item-total">
             ${formatPrice(item.price * item.quantity)}
           </div>
 
-          <button class="btn btn-sm btn-outline-danger btn-remove" data-id="${item.id}" title="Remove item" aria-label="Remove item">
+          <button class="btn btn-sm btn-outline-danger btn-remove" data-id="${item.id}" title="Remove item" aria-label="Remove ${escapeHtml(item.name)} from cart">
             ${getSvgIcon('trash', 14)}
           </button>
         </div>
@@ -197,7 +200,9 @@ export class CartManager {
       btn.addEventListener('click', (e) => {
         const id = parseInt(e.currentTarget.dataset.id, 10);
         const item = this.items.find(i => i.id === id);
-        if (item) this.updateQuantity(id, item.quantity + 1);
+        if (item && item.quantity < item.stock_quantity) {
+          this.updateQuantity(id, item.quantity + 1);
+        }
       });
     });
 
