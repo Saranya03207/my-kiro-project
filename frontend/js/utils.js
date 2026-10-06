@@ -116,10 +116,22 @@ export function showToast(message, type = 'info', duration = 3500) {
   }, duration);
 }
 
+let activeModalId = null;
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && activeModalId) {
+      hideModal(activeModalId);
+    }
+  });
+}
+
 export function showModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
     modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    activeModalId = modalId;
     const firstInput = modal.querySelector('input:not([type=hidden]), select, textarea, button.btn-primary');
     if (firstInput) firstInput.focus();
   }
@@ -129,6 +141,10 @@ export function hideModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
     modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+    if (activeModalId === modalId) {
+      activeModalId = null;
+    }
   }
 }
 

@@ -104,6 +104,21 @@ body {
   outline-offset: 2px;
 }
 
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.btn:focus-visible,
+.tab-btn:focus-visible,
+.filter-chip:focus-visible,
+.role-tab-btn:focus-visible,
+.modal-close-btn:focus-visible {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.35) !important;
+}
+
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
